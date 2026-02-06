@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Гостинец
 
-## Getting Started
+Сервис бронирования отелей по России с видеоверификацией, реальными замерами шума и Wi-Fi, ценами без сюрпризов и возможностью торга.
 
-First, run the development server:
+**Демо-проект** — 50 отелей по 5 городам (Москва, Санкт-Петербург, Сочи, Казань, Калининград).
+
+## Стек
+
+- **Next.js 16** (App Router, Turbopack)
+- **React 19**
+- **TypeScript**
+- **Tailwind CSS 4**
+- **Zustand** — стейт (бронирование, избранное, тосты)
+- **Framer Motion** — анимации
+- **Swiper** — карусели и галереи
+- **Zod + React Hook Form** — валидация форм
+- **Ostrovok/ETG B2B API** — провайдер реальных отелей (опционально)
+
+## Возможности
+
+- Поиск и фильтрация отелей (цена, звёзды, тип, шум, Wi-Fi, workspace)
+- Карточки отелей с реальными замерами (шум в дБ, Wi-Fi в Мбит/с)
+- Видеоверификация и фотогалерея с лайтбоксом
+- AI-суммаризация отзывов с категориями и pros/cons
+- Сортировка отзывов по дате и рейтингу
+- Система торга — предложи свою цену
+- Полный booking flow (выбор номера → данные гостя → оплата → ваучер)
+- Избранное с persist в localStorage
+- Кнопка «Поделиться» (Web Share API / clipboard)
+- Toast-уведомления
+- Информационные страницы (О сервисе, FAQ, Контакты, Политика, Условия)
+- SEO: метаданные, canonical, Open Graph, JSON-LD, sitemap, robots
+- Адаптивный дизайн (mobile-first)
+- Error boundaries, not-found страница
+
+## Запуск
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Открыть [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Ostrovok API (опционально)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Создайте `.env.local`:
 
-## Learn More
+```env
+OSTROVOK_API_KEY=your_key
+OSTROVOK_API_MODE=ostrovok
+```
 
-To learn more about Next.js, take a look at the following resources:
+Без ключа сервис работает на моковых данных (50 отелей).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Структура
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                    # Страницы (App Router)
+│   ├── about/              # О сервисе
+│   ├── booking/[hotelSlug] # Бронирование
+│   ├── confirmation/       # Подтверждение
+│   ├── contact/            # Контакты
+│   ├── faq/                # FAQ
+│   ├── favorites/          # Избранное
+│   ├── hotel/[slug]/       # Страница отеля
+│   ├── privacy/            # Конфиденциальность
+│   ├── search/             # Поиск
+│   ├── terms/              # Условия
+│   └── api/ostrovok/       # API routes (Ostrovok proxy)
+├── components/
+│   ├── home/               # Секции главной
+│   ├── hotel/              # Компоненты отеля
+│   ├── layout/             # Header, Footer, MobileNav
+│   ├── search/             # Поиск и карточки
+│   └── ui/                 # UI-kit (Modal, Badge, Toast, etc.)
+├── data/                   # Моковые данные (50 отелей, отзывы, номера)
+├── lib/                    # Утилиты, API, форматирование
+└── store/                  # Zustand stores
+```
 
-## Deploy on Vercel
+## Скрипты
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Команда | Описание |
+|---------|----------|
+| `npm run dev` | Dev-сервер (Turbopack) |
+| `npm run build` | Production-сборка |
+| `npm run start` | Запуск production |
+| `npm run lint` | ESLint |
