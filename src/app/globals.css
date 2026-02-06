@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: #2E86AB;
+  --color-primary-dark: #236B88;
+  --color-primary-light: #5BA3C2;
+  --color-secondary: #A23B72;
+  --color-secondary-dark: #7E2D59;
+  --color-secondary-light: #C25A93;
+  --color-success: #2C8C47;
+  --color-warning: #E8A838;
+  --color-danger: #DC3545;
+  --color-background: #ffffff;
+  --color-foreground: #1a1a2e;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-card: #ffffff;
+  --color-card-hover: #f9fafb;
+  --font-sans: var(--font-inter);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Swiper hotel gallery overrides */
+.hotel-gallery-swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.hotel-gallery-swiper .swiper-button-next,
+.hotel-gallery-swiper .swiper-button-prev {
+  color: white;
+  background: rgba(0, 0, 0, 0.4);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  backdrop-filter: blur(4px);
+}
+
+.hotel-gallery-swiper .swiper-button-next::after,
+.hotel-gallery-swiper .swiper-button-prev::after {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.hotel-gallery-swiper .swiper-button-next:hover,
+.hotel-gallery-swiper .swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.hotel-gallery-swiper .swiper-pagination-bullet {
+  background: white;
+  opacity: 0.5;
+}
+
+.hotel-gallery-swiper .swiper-pagination-bullet-active {
+  opacity: 1;
+  background: white;
+}
+
+.thumbs-swiper .swiper-slide {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.thumbs-swiper .swiper-slide-thumb-active {
+  opacity: 1;
+  outline: 2px solid var(--color-primary);
+  border-radius: 0.5rem;
 }
