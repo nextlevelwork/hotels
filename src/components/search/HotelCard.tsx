@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MapPin, Volume2, Wifi, Monitor, Video } from 'lucide-react';
 import { cn, formatPriceShort } from '@/lib/utils';
@@ -31,11 +32,12 @@ export default function HotelCard({ hotel, index = 0, className }: HotelCardProp
       >
         {/* Image */}
         <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
-          <img
+          <Image
             src={hotel.photos[0]?.url || ''}
             alt={hotel.photos[0]?.alt || hotel.name}
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {hotel.hasVideoVerification && (
             <div className="absolute top-3 left-3 flex items-center gap-1 bg-black/60 text-white px-2 py-1 rounded-lg text-xs font-medium backdrop-blur-sm">

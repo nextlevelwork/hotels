@@ -160,7 +160,11 @@ function SearchContent() {
             {/* Map column */}
             {showMap && (
               <div className="hidden lg:block">
-                <MapView hotels={hotels} className="h-[600px] sticky top-20" />
+                <MapView
+                  hotels={hotels}
+                  className="h-[600px] sticky top-20"
+                  onCitySelect={(cityId) => setFilters(prev => ({ ...prev, city: cityId }))}
+                />
               </div>
             )}
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Booking } from '@/data/types';
 
 interface BookingGuest {
   firstName: string;
@@ -27,8 +28,17 @@ interface BookingStore {
   paymentMethod: 'card' | 'sbp' | 'cash';
   step: 1 | 2 | 3 | 4;
 
+  // Ostrovok fields
+  bookHash: string;
+  ostrovokHid: number | null;
+  partnerOrderId: string;
+  isOstrovok: boolean;
+
+  // Last completed booking (for confirmation page)
+  lastBooking: Booking | null;
+
   // Actions
-  setRoom: (data: { hotelSlug: string; hotelName: string; roomId: string; roomName: string; pricePerNight: number }) => void;
+  setRoom: (data: { hotelSlug: string; hotelName: string; roomId: string; roomName: string; pricePerNight: number; bookHash?: string }) => void;
   setDates: (checkIn: string, checkOut: string) => void;
   setGuests: (guests: number) => void;
   setGuestInfo: (info: Partial<BookingGuest>) => void;
@@ -36,6 +46,8 @@ interface BookingStore {
   setPromoCode: (code: string, discount: number) => void;
   setBonusRubles: (amount: number) => void;
   setStep: (step: 1 | 2 | 3 | 4) => void;
+  setOstrovok: (data: { ostrovokHid: number; bookHash?: string }) => void;
+  setLastBooking: (booking: Booking) => void;
   nextStep: () => void;
   prevStep: () => void;
   reset: () => void;
@@ -65,6 +77,11 @@ const initialState = {
   bonusRubles: 0,
   paymentMethod: 'card' as const,
   step: 1 as const,
+  bookHash: '',
+  ostrovokHid: null as number | null,
+  partnerOrderId: '',
+  isOstrovok: false,
+  lastBooking: null as Booking | null,
 };
 
 export const useBookingStore = create<BookingStore>((set, get) => ({
@@ -77,6 +94,7 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
       roomId: data.roomId,
       roomName: data.roomName,
       pricePerNight: data.pricePerNight,
+      ...(data.bookHash && { bookHash: data.bookHash }),
     });
     get().calculateTotal();
   },
@@ -109,6 +127,14 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
   },
 
   setStep: (step) => set({ step }),
+
+  setOstrovok: (data) => set({
+    isOstrovok: true,
+    ostrovokHid: data.ostrovokHid,
+    ...(data.bookHash && { bookHash: data.bookHash }),
+  }),
+
+  setLastBooking: (booking) => set({ lastBooking: booking }),
 
   nextStep: () =>
     set((state) => ({

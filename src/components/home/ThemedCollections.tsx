@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { collections } from '@/data/collections';
 import { ArrowRight } from 'lucide-react';
 
@@ -23,11 +24,12 @@ export default function ThemedCollections() {
               className="group bg-white rounded-2xl border border-border overflow-hidden hover:shadow-lg transition-all duration-300"
             >
               <div className="aspect-[16/9] relative overflow-hidden bg-gray-200">
-                <img
+                <Image
                   src={collection.image}
                   alt={collection.title}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 <div className="absolute top-3 left-3">

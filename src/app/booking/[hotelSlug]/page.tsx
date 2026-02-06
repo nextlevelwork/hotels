@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense, use } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { getHotel, getHotelRooms, createBooking, validatePromoCode } from '@/lib/api';
+import { getHotel, getHotelByHid, getHotelRooms, createBooking, createOstrovokBooking, validatePromoCode } from '@/lib/api';
 import { useBookingStore } from '@/store/booking-store';
 import { formatPriceShort, pluralize } from '@/lib/utils';
 import { nightsCount } from '@/lib/format';
@@ -29,6 +29,7 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
   const [rooms, setRooms] = useState<RoomType[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [bookingProgress, setBookingProgress] = useState<string>('');
   const [promoInput, setPromoInput] = useState('');
   const [promoStatus, setPromoStatus] = useState<string>('');
 
@@ -48,6 +49,11 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
       const r = await getHotelRooms(h.id);
       setRooms(r);
 
+      // Detect Ostrovok hotel
+      if (h.ostrovokHid) {
+        store.setOstrovok({ ostrovokHid: h.ostrovokHid, bookHash: h.bookHash });
+      }
+
       const roomParam = searchParams.get('room');
       const preselected = roomParam ? r.find(rm => rm.id === roomParam) : r[0];
       if (preselected) {
@@ -57,6 +63,7 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
           roomId: preselected.id,
           roomName: preselected.name,
           pricePerNight: preselected.pricePerNight,
+          bookHash: preselected.bookHash,
         });
       }
 
@@ -99,23 +106,48 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    setBookingProgress('');
     try {
-      const booking = await createBooking({
-        hotelSlug: store.hotelSlug,
-        roomId: store.roomId,
-        checkIn: store.checkIn,
-        checkOut: store.checkOut,
-        guests: store.guests,
-        guestInfo: { firstName, lastName, email, phone, specialRequests },
-        paymentMethod: store.paymentMethod,
-        promoCode: store.promoCode || undefined,
-        bonusRubles: store.bonusRubles || undefined,
-      });
+      let booking;
+
+      if (store.isOstrovok && store.bookHash) {
+        // Ostrovok booking flow
+        booking = await createOstrovokBooking({
+          bookHash: store.bookHash,
+          hotelName: store.hotelName,
+          hotelSlug: store.hotelSlug,
+          roomName: store.roomName,
+          checkIn: store.checkIn,
+          checkOut: store.checkOut,
+          guests: store.guests,
+          guestInfo: { firstName, lastName, email, phone, specialRequests },
+          pricePerNight: store.pricePerNight,
+          totalPrice: store.totalPrice,
+          onProgress: (status) => setBookingProgress(status),
+        });
+      } else {
+        // Mock booking flow
+        booking = await createBooking({
+          hotelSlug: store.hotelSlug,
+          roomId: store.roomId,
+          checkIn: store.checkIn,
+          checkOut: store.checkOut,
+          guests: store.guests,
+          guestInfo: { firstName, lastName, email, phone, specialRequests },
+          paymentMethod: store.paymentMethod,
+          promoCode: store.promoCode || undefined,
+          bonusRubles: store.bonusRubles || undefined,
+        });
+      }
+
+      store.setLastBooking(booking);
       router.push(`/confirmation/${booking.bookingId}`);
-    } catch {
-      alert('Ошибка при бронировании');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Ошибка при бронировании';
+      alert(message);
     } finally {
       setSubmitting(false);
+      setBookingProgress('');
     }
   };
 
@@ -150,6 +182,7 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
                       roomId: room.id,
                       roomName: room.name,
                       pricePerNight: room.pricePerNight,
+                      bookHash: room.bookHash,
                     })}
                     className={`w-full text-left p-4 rounded-xl border-2 transition-colors cursor-pointer ${
                       store.roomId === room.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'
@@ -387,7 +420,7 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
                   <ChevronLeft className="h-4 w-4 mr-1" /> Назад
                 </Button>
                 <Button fullWidth size="lg" onClick={handleSubmit} loading={submitting}>
-                  Подтвердить бронирование
+                  {bookingProgress || 'Подтвердить бронирование'}
                 </Button>
               </div>
             </div>

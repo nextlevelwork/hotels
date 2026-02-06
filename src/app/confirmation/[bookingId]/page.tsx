@@ -1,16 +1,47 @@
+'use client';
+
+import { use } from 'react';
 import Link from 'next/link';
 import {
-  CheckCircle, Calendar, MapPin, BedDouble, Users, CreditCard,
+  CheckCircle, Calendar, MapPin, BedDouble, CreditCard,
   Download, Mail, Phone, MessageCircle, Home, ArrowRight
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { useBookingStore } from '@/store/booking-store';
+import { formatPriceShort, pluralize } from '@/lib/utils';
 
 interface ConfirmationPageProps {
   params: Promise<{ bookingId: string }>;
 }
 
-export default async function ConfirmationPage({ params }: ConfirmationPageProps) {
-  const { bookingId } = await params;
+export default function ConfirmationPage({ params }: ConfirmationPageProps) {
+  const { bookingId } = use(params);
+  const lastBooking = useBookingStore((s) => s.lastBooking);
+
+  const handleDownloadVoucher = () => {
+    window.print();
+  };
+
+  const handleEmailVoucher = () => {
+    const subject = encodeURIComponent(`Ваучер бронирования ${bookingId} — Гостинец`);
+    const hotelName = lastBooking?.hotel.name || 'отеля';
+    const roomName = lastBooking?.room.name || 'номера';
+    const checkIn = lastBooking?.checkIn || '';
+    const checkOut = lastBooking?.checkOut || '';
+    const price = lastBooking?.finalPrice ? formatPriceShort(lastBooking.finalPrice) : '';
+
+    const body = encodeURIComponent(
+      `Бронирование ${bookingId}\n\nОтель: ${hotelName}\nНомер: ${roomName}\nДаты: ${checkIn} — ${checkOut}\nСтоимость: ${price}\n\nСпасибо за бронирование через Гостинец!`
+    );
+    const email = lastBooking?.guest.email || '';
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  };
+
+  const paymentLabel: Record<string, string> = {
+    card: 'Банковская карта',
+    sbp: 'СБП',
+    cash: 'При заселении',
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
@@ -28,7 +59,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
       </div>
 
       {/* Booking Details Card */}
-      <div className="bg-white rounded-2xl border border-border overflow-hidden mb-8">
+      <div className="bg-white rounded-2xl border border-border overflow-hidden mb-8 print:shadow-none">
         <div className="bg-gradient-to-r from-primary to-primary-dark p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
@@ -48,40 +79,84 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
               <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-sm text-muted">Отель</div>
-                <div className="font-medium">Данные бронирования будут отправлены на email</div>
+                <div className="font-medium">
+                  {lastBooking?.hotel.name || 'Данные бронирования будут отправлены на email'}
+                </div>
+                {lastBooking?.hotel.address && (
+                  <div className="text-xs text-muted mt-0.5">{lastBooking.hotel.address}</div>
+                )}
               </div>
             </div>
             <div className="flex items-start gap-3">
               <Calendar className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-sm text-muted">Даты</div>
-                <div className="font-medium">Указаны в подтверждении на email</div>
+                <div className="font-medium">
+                  {lastBooking
+                    ? `${lastBooking.checkIn} — ${lastBooking.checkOut} (${pluralize(lastBooking.nights, 'ночь', 'ночи', 'ночей')})`
+                    : 'Указаны в подтверждении на email'}
+                </div>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <BedDouble className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-sm text-muted">Номер</div>
-                <div className="font-medium">Согласно выбору при бронировании</div>
+                <div className="font-medium">
+                  {lastBooking?.room.name || 'Согласно выбору при бронировании'}
+                </div>
+                {lastBooking?.guests && (
+                  <div className="text-xs text-muted mt-0.5">
+                    {pluralize(lastBooking.guests, 'гость', 'гостя', 'гостей')}
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CreditCard className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <div className="text-sm text-muted">Оплата</div>
-                <div className="font-medium">Подтверждена</div>
+                <div className="font-medium">
+                  {lastBooking
+                    ? `${formatPriceShort(lastBooking.finalPrice)} — ${paymentLabel[lastBooking.paymentMethod] || 'Подтверждена'}`
+                    : 'Подтверждена'}
+                </div>
+                {lastBooking && lastBooking.discount > 0 && (
+                  <div className="text-xs text-success mt-0.5">
+                    Скидка: {formatPriceShort(lastBooking.discount)}
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Guest Info */}
+          {lastBooking?.guest && (
+            <div className="border-t border-border pt-4">
+              <div className="text-sm text-muted mb-1">Гость</div>
+              <div className="font-medium">
+                {lastBooking.guest.firstName} {lastBooking.guest.lastName}
+              </div>
+              <div className="text-sm text-muted">
+                {lastBooking.guest.email} &middot; {lastBooking.guest.phone}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Voucher Actions */}
-        <div className="border-t border-border p-4 flex flex-wrap gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+        <div className="border-t border-border p-4 flex flex-wrap gap-3 print:hidden">
+          <button
+            onClick={handleDownloadVoucher}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+          >
             <Download className="h-4 w-4" />
             Скачать ваучер
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer">
+          <button
+            onClick={handleEmailVoucher}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+          >
             <Mail className="h-4 w-4" />
             Отправить на email
           </button>
@@ -89,7 +164,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
       </div>
 
       {/* Next Steps */}
-      <div className="bg-white rounded-2xl border border-border p-6 mb-8">
+      <div className="bg-white rounded-2xl border border-border p-6 mb-8 print:hidden">
         <h2 className="font-semibold text-lg mb-4">Что дальше?</h2>
         <div className="space-y-4">
           {[
@@ -131,7 +206,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 print:hidden">
         <Link href="/" className="flex-1">
           <Button variant="outline" fullWidth>
             <Home className="h-4 w-4 mr-2" />

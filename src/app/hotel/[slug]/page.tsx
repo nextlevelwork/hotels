@@ -23,9 +23,24 @@ export async function generateMetadata({ params }: HotelPageProps) {
   const { slug } = await params;
   const hotel = await getHotel(slug);
   if (!hotel) return { title: 'Отель не найден' };
+  const title = `${hotel.name} — ${hotel.cityName}`;
+  const ogImage = hotel.photos[0]?.url;
   return {
-    title: `${hotel.name} — ${hotel.cityName} | Гостинец`,
+    title,
     description: hotel.shortDescription,
+    openGraph: {
+      title,
+      description: hotel.shortDescription,
+      type: 'website',
+      ...(ogImage && {
+        images: [{ url: ogImage, width: 800, height: 500, alt: hotel.name }],
+      }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: hotel.shortDescription,
+    },
   };
 }
 
@@ -40,8 +55,41 @@ export default async function HotelPage({ params }: HotelPageProps) {
 
   const isVerified = hotel.isVerified !== false; // mock hotels are always verified
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LodgingBusiness',
+    name: hotel.name,
+    description: hotel.shortDescription,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: hotel.address,
+      addressLocality: hotel.cityName,
+      addressCountry: 'RU',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: hotel.coordinates.lat,
+      longitude: hotel.coordinates.lng,
+    },
+    ...(hotel.stars && { starRating: { '@type': 'Rating', ratingValue: hotel.stars } }),
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: hotel.rating,
+      reviewCount: hotel.reviewsCount,
+      bestRating: 10,
+    },
+    priceRange: `от ${hotel.priceFrom} ₽`,
+    image: hotel.photos[0]?.url,
+    checkinTime: hotel.checkIn,
+    checkoutTime: hotel.checkOut,
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumbs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <nav className="flex items-center gap-2 text-sm text-muted">

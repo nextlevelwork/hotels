@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, Keyboard, A11y } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
@@ -61,11 +62,13 @@ export default function VideoTour({ hotel }: VideoTourProps) {
             >
               {hotel.photos.map((photo, i) => (
                 <SwiperSlide key={i}>
-                  <img
+                  <Image
                     src={photo.url}
                     alt={photo.alt}
-                    className="w-full h-full object-cover"
-                    loading={i === 0 ? 'eager' : 'lazy'}
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
+                    priority={i === 0}
                   />
                 </SwiperSlide>
               ))}
@@ -97,12 +100,15 @@ export default function VideoTour({ hotel }: VideoTourProps) {
             >
               {hotel.photos.map((photo, i) => (
                 <SwiperSlide key={i} className="!w-20">
-                  <img
-                    src={photo.url}
-                    alt={photo.alt}
-                    className="w-20 h-14 rounded-lg object-cover cursor-pointer transition-opacity hover:opacity-100"
-                    loading="lazy"
-                  />
+                  <div className="relative w-20 h-14">
+                    <Image
+                      src={photo.url}
+                      alt={photo.alt}
+                      fill
+                      sizes="80px"
+                      className="rounded-lg object-cover cursor-pointer transition-opacity hover:opacity-100"
+                    />
+                  </div>
                 </SwiperSlide>
               ))}
             </Swiper>

@@ -10,9 +10,32 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Гостинец — бронирование отелей по России',
+  title: {
+    default: 'Гостинец — бронирование отелей по России',
+    template: '%s | Гостинец',
+  },
   description:
     'Бронируйте отели по России с видеоверификацией, реальными замерами шума и Wi-Fi, ценами без сюрпризов и возможностью торга.',
+  openGraph: {
+    type: 'website',
+    locale: 'ru_RU',
+    siteName: 'Гостинец',
+    title: 'Гостинец — бронирование отелей по России',
+    description: 'Отели с видеоверификацией, замерами шума и Wi-Fi, ценами без сюрпризов',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1513326738677-b964603b136d?w=1200&h=630&fit=crop',
+        width: 1200,
+        height: 630,
+        alt: 'Гостинец — бронирование отелей по России',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Гостинец — бронирование отелей по России',
+    description: 'Отели с видеоверификацией, замерами шума и Wi-Fi, ценами без сюрпризов',
+  },
 };
 
 export default function RootLayout({

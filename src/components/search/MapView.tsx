@@ -8,6 +8,7 @@ import type { Hotel } from '@/data/types';
 interface MapViewProps {
   hotels?: Hotel[];
   className?: string;
+  onCitySelect?: (cityId: string) => void;
 }
 
 // City coordinates mapped to SVG viewBox (approximate positions on Russia map)
@@ -19,7 +20,7 @@ const cityPositions: Record<string, { x: number; y: number; name: string }> = {
   sochi: { x: 195, y: 225, name: 'Сочи' },
 };
 
-export default function MapView({ hotels = [], className }: MapViewProps) {
+export default function MapView({ hotels = [], className, onCitySelect }: MapViewProps) {
   const [activeCity, setActiveCity] = useState<string | null>(null);
 
   // Group hotels by city
@@ -66,11 +67,21 @@ export default function MapView({ hotels = [], className }: MapViewProps) {
               <g
                 key={cityId}
                 className="cursor-pointer"
-                onClick={() => setActiveCity(isActive ? null : cityId)}
+                onClick={() => {
+                  const newCity = isActive ? null : cityId;
+                  setActiveCity(newCity);
+                  if (newCity && onCitySelect) onCitySelect(newCity);
+                }}
                 role="button"
                 tabIndex={0}
                 aria-label={`${pos.name}: ${count} отелей`}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveCity(isActive ? null : cityId); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    const newCity = isActive ? null : cityId;
+                    setActiveCity(newCity);
+                    if (newCity && onCitySelect) onCitySelect(newCity);
+                  }
+                }}
               >
                 {/* Pulse ring for active */}
                 {isActive && (

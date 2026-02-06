@@ -340,6 +340,160 @@ export async function getPriceHistory(hotelId: string): Promise<PriceHistoryPoin
   return points;
 }
 
+// --- Ostrovok booking orchestration ---
+
+async function ostrovokPrebook(bookHash: string): Promise<{
+  partnerOrderId: string;
+  paymentTypes: { type: string; amount: string; currencyCode: string }[];
+}> {
+  const res = await fetch('/api/ostrovok/prebook', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ book_hash: bookHash }),
+  });
+  if (!res.ok) throw new Error('Prebook failed');
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return {
+    partnerOrderId: json.data.partner_order_id,
+    paymentTypes: json.data.payment_types.map((pt: { type: string; amount: string; currency_code: string }) => ({
+      type: pt.type,
+      amount: pt.amount,
+      currencyCode: pt.currency_code,
+    })),
+  };
+}
+
+async function ostrovokStartBooking(data: {
+  partnerOrderId: string;
+  paymentType: string;
+  amount: string;
+  currencyCode: string;
+  guests: { firstName: string; lastName: string }[];
+  email: string;
+  phone: string;
+  comment?: string;
+}): Promise<void> {
+  const res = await fetch('/api/ostrovok/booking/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      partnerOrderId: data.partnerOrderId,
+      paymentType: data.paymentType,
+      amount: data.amount,
+      currencyCode: data.currencyCode,
+      guests: data.guests,
+      email: data.email,
+      phone: data.phone,
+      comment: data.comment,
+    }),
+  });
+  if (!res.ok) throw new Error('Booking start failed');
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+}
+
+async function ostrovokCheckBookingStatus(partnerOrderId: string): Promise<{
+  status: 'ok' | 'processing' | '3ds' | 'error';
+  percent: number;
+}> {
+  const res = await fetch(`/api/ostrovok/booking/status?partner_order_id=${encodeURIComponent(partnerOrderId)}`);
+  if (!res.ok) throw new Error('Status check failed');
+  const json = await res.json();
+  return { status: json.status, percent: json.data?.percent ?? 0 };
+}
+
+export async function createOstrovokBooking(data: {
+  bookHash: string;
+  hotelName: string;
+  hotelSlug: string;
+  roomName: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  guestInfo: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    specialRequests?: string;
+  };
+  pricePerNight: number;
+  totalPrice: number;
+  onProgress?: (status: string, percent: number) => void;
+}): Promise<Booking> {
+  // Step 1: Prebook
+  data.onProgress?.('Проверяем доступность...', 10);
+  const prebook = await ostrovokPrebook(data.bookHash);
+
+  // Step 2: Start booking
+  data.onProgress?.('Создаём бронирование...', 40);
+  const paymentType = prebook.paymentTypes[0];
+  if (!paymentType) throw new Error('No payment types available');
+
+  await ostrovokStartBooking({
+    partnerOrderId: prebook.partnerOrderId,
+    paymentType: paymentType.type,
+    amount: paymentType.amount,
+    currencyCode: paymentType.currencyCode,
+    guests: [{ firstName: data.guestInfo.firstName, lastName: data.guestInfo.lastName }],
+    email: data.guestInfo.email,
+    phone: data.guestInfo.phone,
+    comment: data.guestInfo.specialRequests,
+  });
+
+  // Step 3: Poll status
+  data.onProgress?.('Ожидаем подтверждение...', 60);
+  const maxAttempts = 20;
+  for (let i = 0; i < maxAttempts; i++) {
+    await delay(2000);
+    const statusResult = await ostrovokCheckBookingStatus(prebook.partnerOrderId);
+    data.onProgress?.('Ожидаем подтверждение...', 60 + Math.min(35, statusResult.percent * 0.35));
+
+    if (statusResult.status === 'ok') {
+      data.onProgress?.('Бронирование подтверждено!', 100);
+
+      const checkIn = new Date(data.checkIn);
+      const checkOut = new Date(data.checkOut);
+      const nights = Math.max(1, Math.round((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+
+      return {
+        id: `ostrovok-${prebook.partnerOrderId}`,
+        bookingId: prebook.partnerOrderId.split('-')[0].toUpperCase(),
+        hotel: {
+          name: data.hotelName,
+          slug: data.hotelSlug,
+          address: '',
+          cityName: '',
+          photos: [],
+          checkIn: '14:00',
+          checkOut: '12:00',
+        },
+        room: { name: data.roomName, bedType: '', area: 0 },
+        guest: data.guestInfo,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        nights,
+        guests: data.guests,
+        pricePerNight: data.pricePerNight,
+        totalPrice: data.totalPrice,
+        discount: 0,
+        finalPrice: data.totalPrice,
+        paymentMethod: 'card',
+        status: 'confirmed',
+        createdAt: new Date().toISOString(),
+        cancellationPolicy: 'Согласно условиям тарифа',
+      };
+    }
+
+    if (statusResult.status === 'error') {
+      throw new Error('Бронирование отклонено поставщиком');
+    }
+  }
+
+  throw new Error('Время ожидания подтверждения истекло');
+}
+
 export async function getPopularHotels(): Promise<Hotel[]> {
   await delay(150);
   return [...allHotels].sort((a, b) => b.reviewsCount - a.reviewsCount).slice(0, 6);

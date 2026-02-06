@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { cities } from '@/data/cities';
 import { MapPin } from 'lucide-react';
 import { formatPriceShort } from '@/lib/utils';
@@ -26,11 +27,12 @@ export default function PopularDestinations() {
               }`}
             >
               <div className="aspect-[3/4] relative bg-gray-200">
-                <img
+                <Image
                   src={city.image}
                   alt={city.name}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                  className="object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4">

@@ -104,6 +104,94 @@ export const rooms: RoomType[] = [
   { id: 'room-60', hotelId: 'klg-6', name: 'Двухместный', description: 'Простой, но чистый номер', area: 16, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 2500, photos: [{ url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800', alt: 'Двухместный' }], amenities: ['wifi', 'ac', 'tv'], available: true, availableCount: 8, cancellationFree: false, breakfastIncluded: true },
   { id: 'room-61', hotelId: 'klg-7', name: 'Кровать в дорме', description: '6-местный дормиторий', area: 4, maxGuests: 1, bedType: 'Односпальная кровать', pricePerNight: 900, photos: [{ url: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800', alt: 'Дорм' }], amenities: ['wifi'], available: true, availableCount: 12, cancellationFree: true, breakfastIncluded: false },
   { id: 'room-62', hotelId: 'klg-8', name: 'Комната в усадьбе', description: 'Уютная комната с видом на сад', area: 20, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 4200, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Комната' }], amenities: ['wifi', 'garden', 'breakfast'], available: true, availableCount: 3, cancellationFree: true, breakfastIncluded: true },
+
+  // === Additional rooms for hotels with only 1 room ===
+
+  // Kazan — kzn-1 Ривьера (2 more)
+  { id: 'room-63', hotelId: 'kzn-1', name: 'Семейный Делюкс', description: 'Просторный номер для всей семьи с доступом в аквапарк', area: 35, maxGuests: 4, bedType: 'Двуспальная + двухъярусная', pricePerNight: 8500, originalPrice: 9500, photos: [{ url: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800', alt: 'Семейный' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'pool'], available: true, availableCount: 6, cancellationFree: true, breakfastIncluded: true },
+  { id: 'room-64', hotelId: 'kzn-1', name: 'Люкс Панорама', description: 'Люкс на верхнем этаже с панорамным видом на Казань и аквапарк', area: 50, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 14000, photos: [{ url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'pool', 'workspace'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // kzn-2 Корстон (2 more)
+  { id: 'room-65', hotelId: 'kzn-2', name: 'Супериор', description: 'Улучшенный номер с видом на город', area: 28, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 6800, photos: [{ url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', alt: 'Супериор' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'workspace'], available: true, availableCount: 8, cancellationFree: true, breakfastIncluded: true },
+  { id: 'room-66', hotelId: 'kzn-2', name: 'Бизнес Люкс', description: 'Номер с отдельной гостиной и рабочим кабинетом', area: 45, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 11000, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Бизнес Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'workspace'], available: true, availableCount: 3, cancellationFree: true, breakfastIncluded: true },
+
+  // kzn-3 Шаляпин (2 more)
+  { id: 'room-67', hotelId: 'kzn-3', name: 'Стандарт', description: 'Уютный номер в историческом центре Казани', area: 20, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 4800, photos: [{ url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800', alt: 'Стандарт' }], amenities: ['wifi', 'ac', 'tv', 'safe'], available: true, availableCount: 10, cancellationFree: true, breakfastIncluded: true },
+  { id: 'room-68', hotelId: 'kzn-3', name: 'Люкс Шаляпин', description: 'Роскошный люкс с мебелью в стиле начала XX века и видом на Кремль', area: 45, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 12000, photos: [{ url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // kzn-4 Мираж (2 more)
+  { id: 'room-69', hotelId: 'kzn-4', name: 'Стандарт Мираж', description: 'Современный номер с качественной отделкой', area: 20, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 3800, photos: [{ url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800', alt: 'Стандарт' }], amenities: ['wifi', 'ac', 'tv', 'safe'], available: true, availableCount: 12, cancellationFree: true, breakfastIncluded: false },
+  { id: 'room-70', hotelId: 'kzn-4', name: 'Делюкс с террасой', description: 'Угловой номер с собственной террасой и видом на Кремль', area: 32, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 7500, photos: [{ url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800', alt: 'Делюкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'balcony', 'workspace'], available: true, availableCount: 3, cancellationFree: true, breakfastIncluded: true },
+
+  // kzn-5 Старо-Татарская слобода (1 more)
+  { id: 'room-71', hotelId: 'kzn-5', name: 'Комната Мастера', description: 'Авторский номер с антикварной мебелью и видом на старый город', area: 28, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 5500, photos: [{ url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800', alt: 'Мастер' }], amenities: ['wifi', 'ac', 'tv', 'minibar'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // kzn-6 Ибис Казань (1 more)
+  { id: 'room-72', hotelId: 'kzn-6', name: 'Делюкс Кабан', description: 'Улучшенный номер с балконом и видом на озеро Кабан', area: 26, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 5800, photos: [{ url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', alt: 'Делюкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'balcony'], available: true, availableCount: 4, cancellationFree: true, breakfastIncluded: true },
+
+  // kzn-7 Хостел Кот Казанский (1 more)
+  { id: 'room-73', hotelId: 'kzn-7', name: 'Приватная комната', description: 'Отдельная комната для двоих с видом на улицу Баумана', area: 14, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 2000, photos: [{ url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800', alt: 'Приватная' }], amenities: ['wifi', 'ac'], available: true, availableCount: 3, cancellationFree: true, breakfastIncluded: false },
+
+  // kzn-8 Апартаменты на Баумана (1 more)
+  { id: 'room-74', hotelId: 'kzn-8', name: 'Двухкомнатные апартаменты', description: 'Апартаменты с отдельной спальней, кухней и стиральной машиной', area: 55, maxGuests: 4, bedType: 'King-size кровать + раскладной диван', pricePerNight: 5000, photos: [{ url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800', alt: 'Апартаменты' }], amenities: ['wifi', 'ac', 'tv', 'kitchen', 'laundry', 'workspace'], available: true, availableCount: 1, cancellationFree: true, breakfastIncluded: false },
+
+  // Kaliningrad — klg-1 Кристал Хаус (2 more)
+  { id: 'room-75', hotelId: 'klg-1', name: 'Делюкс Кёнигсберг', description: 'Просторный номер с антикварными деталями и видом на город', area: 32, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 10500, photos: [{ url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800', alt: 'Делюкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service'], available: true, availableCount: 3, cancellationFree: true, breakfastIncluded: true },
+  { id: 'room-76', hotelId: 'klg-1', name: 'Люкс Янтарный', description: 'Роскошный люкс с гостиной, камином и авторским интерьером', area: 50, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 18000, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'workspace'], available: true, availableCount: 1, cancellationFree: true, breakfastIncluded: true },
+
+  // klg-2 Кайзерхоф (2 more)
+  { id: 'room-77', hotelId: 'klg-2', name: 'Стандарт', description: 'Комфортный номер в немецком стиле', area: 22, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 5000, photos: [{ url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800', alt: 'Стандарт' }], amenities: ['wifi', 'ac', 'tv', 'safe'], available: true, availableCount: 8, cancellationFree: true, breakfastIncluded: true },
+  { id: 'room-78', hotelId: 'klg-2', name: 'Люкс Кайзер', description: 'Просторный люкс с видом на Преголю и спа-доступом', area: 45, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 12000, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'workspace'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // klg-3 Юность (1 more)
+  { id: 'room-79', hotelId: 'klg-3', name: 'Делюкс Морской', description: 'Улучшенный номер с морскими акцентами и рабочей зоной', area: 24, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 4800, photos: [{ url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', alt: 'Делюкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe'], available: true, availableCount: 4, cancellationFree: true, breakfastIncluded: true },
+
+  // klg-4 Рыбная деревня апартаменты (1 more)
+  { id: 'room-80', hotelId: 'klg-4', name: 'Двухкомнатные апартаменты', description: 'Просторные апартаменты с балконом на Преголю и полной кухней', area: 55, maxGuests: 4, bedType: 'King-size кровать + раскладной диван', pricePerNight: 6500, photos: [{ url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800', alt: 'Апартаменты' }], amenities: ['wifi', 'ac', 'tv', 'kitchen', 'balcony', 'laundry'], available: true, availableCount: 1, cancellationFree: true, breakfastIncluded: false },
+
+  // klg-5 Холидей Инн (2 more)
+  { id: 'room-81', hotelId: 'klg-5', name: 'Супериор', description: 'Улучшенный номер с видом на город', area: 28, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 7200, photos: [{ url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', alt: 'Супериор' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'workspace'], available: true, availableCount: 6, cancellationFree: true, breakfastIncluded: true },
+  { id: 'room-82', hotelId: 'klg-5', name: 'Люкс', description: 'Номер люкс с гостиной и рабочей зоной', area: 42, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 11000, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'workspace'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // klg-6 Гостиница Москва (1 more)
+  { id: 'room-83', hotelId: 'klg-6', name: 'Стандарт улучшенный', description: 'Обновлённый номер с холодильником и рабочим столом', area: 20, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 3500, photos: [{ url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', alt: 'Стандарт' }], amenities: ['wifi', 'ac', 'tv', 'safe'], available: true, availableCount: 10, cancellationFree: true, breakfastIncluded: true },
+
+  // klg-7 Хостел Амбер (1 more)
+  { id: 'room-84', hotelId: 'klg-7', name: 'Приватная комната', description: 'Отдельная комната для двоих в самом центре', area: 12, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 2200, photos: [{ url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800', alt: 'Приватная' }], amenities: ['wifi', 'ac'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: false },
+
+  // klg-8 Усадьба Шлосс (1 more)
+  { id: 'room-85', hotelId: 'klg-8', name: 'Люкс с террасой', description: 'Просторный люкс с выходом в сад и видом на море', area: 35, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 7000, photos: [{ url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800', alt: 'Люкс' }], amenities: ['wifi', 'garden', 'breakfast', 'balcony'], available: true, availableCount: 1, cancellationFree: true, breakfastIncluded: true },
+
+  // Also add extra rooms for other single-room hotels
+  // spb-2 Домина (1 more)
+  { id: 'room-86', hotelId: 'spb-2', name: 'Люкс Мойка', description: 'Просторный люкс с панорамным видом на Мойку', area: 40, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 16000, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // spb-5 Гранд Отель Европа (1 more)
+  { id: 'room-87', hotelId: 'spb-5', name: 'Исторический Люкс', description: 'Роскошный люкс с антикварной мебелью и видом на Невский', area: 60, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 55000, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'workspace'], available: true, availableCount: 1, cancellationFree: true, breakfastIncluded: true },
+
+  // spb-4 Soul Kitchen (1 more)
+  { id: 'room-88', hotelId: 'spb-4', name: 'Приватная на Мойке', description: 'Отдельная комната с видом на набережную Мойки', area: 14, maxGuests: 2, bedType: 'Двуспальная кровать', pricePerNight: 2800, photos: [{ url: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800', alt: 'Приватная' }], amenities: ['wifi', 'ac'], available: true, availableCount: 3, cancellationFree: true, breakfastIncluded: false },
+
+  // msk-9 Дизайн-отель Стандарт (1 more)
+  { id: 'room-89', hotelId: 'msk-9', name: 'Люкс с руфтопом', description: 'Люкс на последнем этаже с доступом на руфтоп-террасу', area: 40, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 18000, photos: [{ url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'workspace'], available: true, availableCount: 1, cancellationFree: true, breakfastIncluded: true },
+
+  // msk-11 Космос (1 more)
+  { id: 'room-90', hotelId: 'msk-11', name: 'Супериор ВДНХ', description: 'Улучшенный номер с видом на ВДНХ и парк', area: 24, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 5500, photos: [{ url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', alt: 'Супериор' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe'], available: true, availableCount: 10, cancellationFree: true, breakfastIncluded: true },
+
+  // msk-12 Кебур (1 more)
+  { id: 'room-91', hotelId: 'msk-12', name: 'Люкс Арбатский', description: 'Изысканный люкс с гостиной и видом на Арбат', area: 45, maxGuests: 3, bedType: 'King-size кровать + диван', pricePerNight: 22000, photos: [{ url: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'room-service', 'workspace'], available: true, availableCount: 1, cancellationFree: true, breakfastIncluded: true },
+
+  // spb-6 Австрия (1 more)
+  { id: 'room-92', hotelId: 'spb-6', name: 'Австрийский люкс', description: 'Люкс с камином и антикварной мебелью', area: 35, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 6500, photos: [{ url: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // sochi-2 Богатырь (1 more)
+  { id: 'room-93', hotelId: 'sochi-2', name: 'Сказочный Люкс', description: 'Тематический люкс с башней и видом на Сочи Парк', area: 40, maxGuests: 4, bedType: 'King-size кровать + двухъярусная', pricePerNight: 12000, photos: [{ url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800', alt: 'Люкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe'], available: true, availableCount: 2, cancellationFree: true, breakfastIncluded: true },
+
+  // sochi-3 Сочи Парк Отель (1 more)
+  { id: 'room-94', hotelId: 'sochi-3', name: 'Делюкс Морской', description: 'Улучшенный номер с балконом и видом на море', area: 28, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 8500, photos: [{ url: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800', alt: 'Делюкс' }], amenities: ['wifi', 'ac', 'tv', 'minibar', 'safe', 'balcony'], available: true, availableCount: 4, cancellationFree: true, breakfastIncluded: true },
+
+  // sochi-4 Глэмпинг (1 more)
+  { id: 'room-95', hotelId: 'sochi-4', name: 'Домик на дереве', description: 'Уникальный домик на дереве с панорамным остеклением', area: 25, maxGuests: 2, bedType: 'King-size кровать', pricePerNight: 15000, photos: [{ url: 'https://images.unsplash.com/photo-1499696010180-025ef6e1a8f9?w=800', alt: 'Домик' }], amenities: ['wifi', 'balcony'], available: true, availableCount: 2, cancellationFree: false, breakfastIncluded: true },
 ];
 
 export function getRoomsByHotelId(hotelId: string): RoomType[] {
