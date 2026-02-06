@@ -20,10 +20,31 @@ const travelerLabels: Record<string, string> = {
   friends: 'С друзьями',
 };
 
+type SortBy = 'date' | 'rating-high' | 'rating-low';
+
+function sortReviews(items: Review[], sortBy: SortBy): Review[] {
+  const sorted = [...items];
+  switch (sortBy) {
+    case 'rating-high':
+      sorted.sort((a, b) => b.rating - a.rating);
+      break;
+    case 'rating-low':
+      sorted.sort((a, b) => a.rating - b.rating);
+      break;
+    case 'date':
+    default:
+      sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      break;
+  }
+  return sorted;
+}
+
 export default function ReviewSection({ reviews, summary }: ReviewSectionProps) {
   const [filter, setFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<SortBy>('date');
 
   const filtered = filter === 'all' ? reviews : reviews.filter(r => r.travelerType === filter);
+  const sorted = sortReviews(filtered, sortBy);
 
   // No reviews at all — show a minimal message
   if (reviews.length === 0 && !summary) {
@@ -109,8 +130,9 @@ export default function ReviewSection({ reviews, summary }: ReviewSectionProps) 
         </div>
       )}
 
-      {/* Filter by traveler type */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+      {/* Filter & Sort controls */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="flex gap-2 overflow-x-auto pb-2 flex-1">
         {['all', 'business', 'couple', 'family', 'solo', 'friends'].map(type => (
           <button
             key={type}
@@ -125,11 +147,25 @@ export default function ReviewSection({ reviews, summary }: ReviewSectionProps) 
             {type === 'all' ? 'Все' : travelerLabels[type]}
           </button>
         ))}
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-xs text-muted">{sorted.length} шт.</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortBy)}
+            className="text-sm border border-border rounded-lg px-2 py-1.5 bg-white text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="date">По дате</option>
+            <option value="rating-high">Высокий рейтинг</option>
+            <option value="rating-low">Низкий рейтинг</option>
+          </select>
+        </div>
       </div>
 
       {/* Reviews List */}
       <div className="space-y-4">
-        {filtered.map(review => (
+        {sorted.map(review => (
           <div key={review.id} className="bg-white rounded-xl border border-border p-5">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
@@ -163,7 +199,7 @@ export default function ReviewSection({ reviews, summary }: ReviewSectionProps) 
             )}
           </div>
         ))}
-        {filtered.length === 0 && (
+        {sorted.length === 0 && (
           <p className="text-center text-muted py-8">Нет отзывов для выбранного фильтра</p>
         )}
       </div>

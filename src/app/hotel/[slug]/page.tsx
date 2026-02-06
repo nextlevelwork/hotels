@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getHotel, getHotelRooms, getHotelReviews, getHotelReviewSummary } from '@/lib/api';
+import { allHotels } from '@/data/hotels';
 import Badge from '@/components/ui/Badge';
 import RatingBadge from '@/components/ui/RatingBadge';
 import StarRating from '@/components/ui/StarRating';
@@ -13,7 +14,12 @@ import BidButton from '@/components/hotel/BidButton';
 import PriceChart from '@/components/hotel/PriceChart';
 import StickyBookingBar from '@/components/hotel/StickyBookingBar';
 import GuaranteeInfo from '@/components/hotel/GuaranteeInfo';
+import HotelSidebarActions from '@/components/hotel/HotelSidebarActions';
 import Link from 'next/link';
+
+export async function generateStaticParams() {
+  return allHotels.map((hotel) => ({ slug: hotel.slug }));
+}
 
 interface HotelPageProps {
   params: Promise<{ slug: string }>;
@@ -28,6 +34,9 @@ export async function generateMetadata({ params }: HotelPageProps) {
   return {
     title,
     description: hotel.shortDescription,
+    alternates: {
+      canonical: `/hotel/${slug}`,
+    },
     openGraph: {
       title,
       description: hotel.shortDescription,
@@ -197,6 +206,8 @@ export default async function HotelPage({ params }: HotelPageProps) {
               >
                 Забронировать
               </Link>
+
+              <HotelSidebarActions slug={hotel.slug} hotelName={hotel.name} />
 
               {hotel.bidEnabled && (
                 <div className="mt-3">

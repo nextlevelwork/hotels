@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Thumbs, Keyboard, A11y } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
-import { Play, X } from 'lucide-react';
+import { Play, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import type { Hotel } from '@/data/types';
 
@@ -22,6 +23,13 @@ export default function VideoTour({ hotel }: VideoTourProps) {
   const [showVideo, setShowVideo] = useState(false);
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>(null);
   const mainSwiperRef = useRef<SwiperType | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -62,14 +70,16 @@ export default function VideoTour({ hotel }: VideoTourProps) {
             >
               {hotel.photos.map((photo, i) => (
                 <SwiperSlide key={i}>
-                  <Image
-                    src={photo.url}
-                    alt={photo.alt}
-                    fill
-                    sizes="100vw"
-                    className="object-cover"
-                    priority={i === 0}
-                  />
+                  <div className="relative w-full h-full cursor-zoom-in" onClick={() => openLightbox(i)}>
+                    <Image
+                      src={photo.url}
+                      alt={photo.alt}
+                      fill
+                      sizes="100vw"
+                      className="object-cover"
+                      priority={i === 0}
+                    />
+                  </div>
                 </SwiperSlide>
               ))}
             </Swiper>
@@ -115,6 +125,98 @@ export default function VideoTour({ hotel }: VideoTourProps) {
           </div>
         )}
       </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <LightboxModal
+            photos={hotel.photos}
+            startIndex={lightboxIndex}
+            onClose={() => setLightboxOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+function LightboxModal({
+  photos,
+  startIndex,
+  onClose,
+}: {
+  photos: { url: string; alt: string }[];
+  startIndex: number;
+  onClose: () => void;
+}) {
+  const [current, setCurrent] = useState(startIndex);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight') setCurrent((c) => (c + 1) % photos.length);
+      if (e.key === 'ArrowLeft') setCurrent((c) => (c - 1 + photos.length) % photos.length);
+    };
+    document.addEventListener('keydown', handleKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose, photos.length]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+        aria-label="Закрыть"
+      >
+        <X className="h-6 w-6" />
+      </button>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c - 1 + photos.length) % photos.length); }}
+            className="absolute left-4 z-10 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+            aria-label="Предыдущее фото"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setCurrent((c) => (c + 1) % photos.length); }}
+            className="absolute right-4 z-10 p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-pointer"
+            aria-label="Следующее фото"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+        </>
+      )}
+
+      <div
+        className="relative w-full h-full max-w-5xl max-h-[80vh] mx-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Image
+          src={photos[current].url}
+          alt={photos[current].alt}
+          fill
+          sizes="100vw"
+          className="object-contain"
+          priority
+        />
+      </div>
+
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+        {current + 1} / {photos.length}
+      </div>
+    </motion.div>
   );
 }

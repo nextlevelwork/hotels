@@ -3,13 +3,21 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import ToastContainer from '@/components/ui/ToastContainer';
+import ScrollToTop from '@/components/ui/ScrollToTop';
 
 const inter = Inter({
   variable: '--font-inter',
   subsets: ['latin', 'cyrillic'],
 });
 
+const BASE_URL = 'https://gostinets.ru';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
+  alternates: {
+    canonical: '/',
+  },
   title: {
     default: 'Гостинец — бронирование отелей по России',
     template: '%s | Гостинец',
@@ -55,6 +63,8 @@ export default function RootLayout({
         <Header />
         <main id="main-content" className="min-h-screen">{children}</main>
         <Footer />
+        <ToastContainer />
+        <ScrollToTop />
       </body>
     </html>
   );

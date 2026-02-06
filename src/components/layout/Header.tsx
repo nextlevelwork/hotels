@@ -4,10 +4,12 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X, Search, User, Heart, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFavoritesStore } from '@/store/favorites-store';
 import MobileNav from './MobileNav';
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const favCount = useFavoritesStore((s) => s.slugs.length);
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-border">
@@ -44,9 +46,17 @@ export default function Header() {
             >
               <Search className="h-5 w-5" />
             </Link>
-            <button className="p-2 rounded-lg text-muted hover:text-foreground hover:bg-gray-100 transition-colors cursor-pointer">
+            <Link
+              href="/favorites"
+              className="relative p-2 rounded-lg text-muted hover:text-foreground hover:bg-gray-100 transition-colors"
+            >
               <Heart className="h-5 w-5" />
-            </button>
+              {favCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                  {favCount}
+                </span>
+              )}
+            </Link>
             <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:border-primary/30 hover:bg-primary/5 transition-colors cursor-pointer">
               <User className="h-4 w-4" />
               <span className="text-sm font-medium">Войти</span>

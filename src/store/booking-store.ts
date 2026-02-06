@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Booking } from '@/data/types';
 
 interface BookingGuest {
@@ -84,7 +85,9 @@ const initialState = {
   lastBooking: null as Booking | null,
 };
 
-export const useBookingStore = create<BookingStore>((set, get) => ({
+export const useBookingStore = create<BookingStore>()(
+  persist(
+    (set, get) => ({
   ...initialState,
 
   setRoom: (data) => {
@@ -155,4 +158,27 @@ export const useBookingStore = create<BookingStore>((set, get) => ({
     const total = Math.max(0, subtotal - promoAmount - state.bonusRubles);
     set({ totalPrice: total });
   },
-}));
+    }),
+    {
+      name: 'gostinets-booking',
+      storage: {
+        getItem: (name) => {
+          if (typeof window === 'undefined') return null;
+          const value = sessionStorage.getItem(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: (name, value) => {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem(name, JSON.stringify(value));
+          }
+        },
+        removeItem: (name) => {
+          if (typeof window !== 'undefined') {
+            sessionStorage.removeItem(name);
+          }
+        },
+      },
+      partialize: (state) => ({ lastBooking: state.lastBooking }) as unknown as BookingStore,
+    },
+  ),
+);

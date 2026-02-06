@@ -100,3 +100,36 @@ body {
   outline: 2px solid var(--color-primary);
   border-radius: 0.5rem;
 }
+
+/* Print styles for voucher */
+@media print {
+  header, footer, nav,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+
+  main {
+    min-height: auto !important;
+    padding: 0 !important;
+  }
+
+  .print\:shadow-none {
+    box-shadow: none !important;
+  }
+
+  /* Ensure voucher card gradient prints */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+}

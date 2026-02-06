@@ -8,6 +8,7 @@ import { cn, formatPriceShort } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import RatingBadge from '@/components/ui/RatingBadge';
 import StarRating from '@/components/ui/StarRating';
+import FavoriteButton from '@/components/ui/FavoriteButton';
 import type { Hotel } from '@/data/types';
 
 interface HotelCardProps {
@@ -45,11 +46,14 @@ export default function HotelCard({ hotel, index = 0, className }: HotelCardProp
               Видео
             </div>
           )}
-          {hotel.bidEnabled && (
-            <div className="absolute top-3 right-3 bg-secondary text-white px-2 py-1 rounded-lg text-xs font-semibold">
-              Торг
-            </div>
-          )}
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+            {hotel.bidEnabled && (
+              <div className="bg-secondary text-white px-2 py-1 rounded-lg text-xs font-semibold">
+                Торг
+              </div>
+            )}
+            <FavoriteButton slug={hotel.slug} />
+          </div>
           {/* Price overlay */}
           <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1.5 shadow-sm">
             <div className="text-xs text-muted">от</div>

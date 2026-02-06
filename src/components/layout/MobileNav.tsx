@@ -93,12 +93,14 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
           <Bookmark className="h-5 w-5 text-muted" />
           <span className="font-medium">Подборки</span>
         </Link>
-        <button
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors w-full cursor-pointer"
+        <Link
+          href="/favorites"
+          onClick={onClose}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors w-full"
         >
           <Heart className="h-5 w-5 text-muted" />
           <span className="font-medium">Избранное</span>
-        </button>
+        </Link>
         <div className="pt-2 border-t border-border mt-2">
           <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors w-full cursor-pointer">
             <User className="h-5 w-5 text-muted" />

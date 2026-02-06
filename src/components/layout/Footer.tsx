@@ -18,13 +18,27 @@ export default function Footer() {
               Бронирование отелей по России с видеоверификацией, реальными замерами и ценами без сюрпризов.
             </p>
             <div className="flex items-center gap-3">
-              <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+              <a
+                href="https://t.me/gostinets"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+                aria-label="Telegram"
+              >
                 <MessageCircle className="h-4 w-4" />
               </a>
-              <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+              <a
+                href="tel:+78001234567"
+                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+                aria-label="Телефон"
+              >
                 <Phone className="h-4 w-4" />
               </a>
-              <a href="#" className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+              <a
+                href="mailto:info@gostinets.ru"
+                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+                aria-label="Email"
+              >
                 <Mail className="h-4 w-4" />
               </a>
             </div>
@@ -56,22 +70,22 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-3">О сервисе</h3>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Как это работает</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Видеоверификация</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Гарантия заселения</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Помощь</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Контакты</a></li>
+              <li><Link href="/about" className="hover:text-white transition-colors">Как это работает</Link></li>
+              <li><Link href="/about#verification" className="hover:text-white transition-colors">Видеоверификация</Link></li>
+              <li><Link href="/about#guarantee" className="hover:text-white transition-colors">Гарантия заселения</Link></li>
+              <li><Link href="/faq" className="hover:text-white transition-colors">Помощь</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Контакты</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-gray-500">
-            &copy; 2025 Гостинец. Все права защищены. Демо-проект.
+            &copy; {new Date().getFullYear()} Гостинец. Все права защищены. Демо-проект.
           </p>
           <div className="flex gap-4 text-xs text-gray-500">
-            <a href="#" className="hover:text-gray-300 transition-colors">Политика конфиденциальности</a>
-            <a href="#" className="hover:text-gray-300 transition-colors">Условия использования</a>
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Политика конфиденциальности</Link>
+            <Link href="/terms" className="hover:text-gray-300 transition-colors">Условия использования</Link>
           </div>
         </div>
       </div>
