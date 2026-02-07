@@ -86,6 +86,8 @@ model Booking {
   bonusSpent    Int      @default(0)
   bonusEarned   Int      @default(0)
   paymentMethod String
+  paymentId         String?
+  paymentStatus     String   @default("pending")
   status            String   @default("confirmed")
   notificationsSent String   @default("")
   guestFirstName    String

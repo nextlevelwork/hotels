@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { formatPriceShort } from '@/lib/utils';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
@@ -93,7 +93,20 @@ export default function AdminBookingsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Бронирования</h1>
-        <span className="text-sm text-muted">Всего: {total}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted">Всего: {total}</span>
+          <button
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (statusFilter) params.set('status', statusFilter);
+              window.open(`/api/admin/bookings/export?${params}`, '_blank');
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-white text-sm font-medium text-muted hover:bg-gray-50 hover:text-foreground transition-colors cursor-pointer"
+          >
+            <Download className="h-4 w-4" />
+            CSV
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

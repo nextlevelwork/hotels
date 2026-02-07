@@ -184,6 +184,32 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
       }
 
       store.setLastBooking(booking);
+
+      // For card/sbp — initiate YooKassa payment
+      if (store.paymentMethod !== 'cash' && booking.finalPrice > 0) {
+        setBookingProgress('Переход к оплате...');
+        try {
+          const payRes = await fetch('/api/payments/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              bookingId: booking.bookingId,
+              amount: booking.finalPrice,
+              description: `Бронирование ${booking.bookingId} — ${store.hotelName}`,
+              paymentMethod: store.paymentMethod,
+            }),
+          });
+          const payData = await payRes.json();
+
+          if (payData.confirmationUrl) {
+            window.location.href = payData.confirmationUrl;
+            return;
+          }
+        } catch {
+          // If payment creation fails, still go to confirmation
+        }
+      }
+
       router.push(`/confirmation/${booking.bookingId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Ошибка при бронировании';

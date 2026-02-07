@@ -1,10 +1,10 @@
 'use client';
 
-import { use, useEffect, useRef } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle, Calendar, MapPin, BedDouble, CreditCard,
-  Download, Mail, Phone, MessageCircle, Home, ArrowRight, Gift
+  Download, Mail, Phone, MessageCircle, Home, ArrowRight, Gift, Loader2
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useBookingStore } from '@/store/booking-store';
@@ -18,6 +18,8 @@ interface ConfirmationPageProps {
 export default function ConfirmationPage({ params }: ConfirmationPageProps) {
   const { bookingId } = use(params);
   const lastBooking = useBookingStore((s) => s.lastBooking);
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
 
   // Persist booking to PostgreSQL (fire-and-forget)
   const saved = useRef(false);
@@ -51,6 +53,39 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
       }),
     }).catch(() => {});
   }, [lastBooking]);
+
+  // Poll payment status for online payments
+  useEffect(() => {
+    const method = lastBooking?.paymentMethod;
+    if (!method || method === 'cash') return;
+
+    setPolling(true);
+    let attempts = 0;
+    const maxAttempts = 30; // 30 * 3s = 90s
+
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await fetch(`/api/payments/status/${bookingId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPaymentStatus(data.paymentStatus);
+          if (data.paymentStatus === 'succeeded' || data.paymentStatus === 'canceled' || attempts >= maxAttempts) {
+            setPolling(false);
+            clearInterval(interval);
+          }
+        }
+      } catch {
+        // ignore polling errors
+      }
+      if (attempts >= maxAttempts) {
+        setPolling(false);
+        clearInterval(interval);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [bookingId, lastBooking?.paymentMethod]);
 
   const handleDownloadVoucher = () => {
     window.print();
@@ -91,6 +126,34 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
           Номер бронирования: <span className="font-mono font-bold text-foreground">{bookingId}</span>
         </p>
       </div>
+
+      {/* Payment Status */}
+      {lastBooking && lastBooking.paymentMethod !== 'cash' && (
+        <div className={`rounded-xl border p-4 mb-6 flex items-center gap-3 ${
+          paymentStatus === 'succeeded'
+            ? 'bg-green-50 border-green-200 text-green-700'
+            : paymentStatus === 'canceled'
+            ? 'bg-red-50 border-red-200 text-red-700'
+            : 'bg-blue-50 border-blue-200 text-blue-700'
+        }`}>
+          {polling ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : paymentStatus === 'succeeded' ? (
+            <CheckCircle className="h-5 w-5" />
+          ) : (
+            <CreditCard className="h-5 w-5" />
+          )}
+          <span className="text-sm font-medium">
+            {paymentStatus === 'succeeded'
+              ? 'Оплата прошла успешно'
+              : paymentStatus === 'canceled'
+              ? 'Оплата не прошла. Попробуйте снова.'
+              : polling
+              ? 'Ожидаем подтверждение оплаты...'
+              : 'Статус оплаты: ожидает'}
+          </span>
+        </div>
+      )}
 
       {/* Booking Details Card */}
       <div className="bg-white rounded-2xl border border-border overflow-hidden mb-8 print:shadow-none">
