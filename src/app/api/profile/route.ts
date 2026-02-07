@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { sanitizeText } from '@/lib/utils';
 
 export async function GET() {
   const session = await auth();
@@ -62,8 +63,8 @@ export async function PATCH(request: Request) {
 
   // Update profile fields
   const updateData: Record<string, string | boolean> = {};
-  if (name !== undefined) updateData.name = name;
-  if (phone !== undefined) updateData.phone = phone;
+  if (name !== undefined) updateData.name = sanitizeText(name);
+  if (phone !== undefined) updateData.phone = sanitizeText(phone);
   if (typeof emailNotifications === 'boolean') updateData.emailNotifications = emailNotifications;
 
   const updated = await prisma.user.update({

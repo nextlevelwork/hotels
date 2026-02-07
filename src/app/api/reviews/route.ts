@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { sanitizeText } from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   const hotelSlug = request.nextUrl.searchParams.get('hotelSlug');
@@ -74,10 +75,10 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         authorName: session.user.name || 'Гость',
         rating,
-        title: title.trim(),
-        text: text.trim(),
-        pros: pros?.trim() || null,
-        cons: cons?.trim() || null,
+        title: sanitizeText(title),
+        text: sanitizeText(text),
+        pros: pros ? sanitizeText(pros) : null,
+        cons: cons ? sanitizeText(cons) : null,
         travelerType,
         status: 'approved',
       },

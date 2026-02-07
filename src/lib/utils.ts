@@ -46,6 +46,16 @@ export function slugify(text: string): string {
     .replace(/^-|-$/g, '');
 }
 
+/** Strip HTML tags and collapse whitespace to prevent stored XSS */
+export function sanitizeText(input: string): string {
+  return input
+    .replace(/<[^>]*>/g, '')
+    .replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&amp;/gi, '&')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 export function generateBookingId(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = 'GOS-';

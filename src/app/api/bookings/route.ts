@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { sendBookingConfirmation } from '@/lib/email';
 import { maxBonusSpend } from '@/lib/loyalty';
 import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
+import { sanitizeText } from '@/lib/utils';
 
 export async function GET() {
   const session = await auth();
@@ -91,8 +92,8 @@ export async function POST(request: Request) {
           bookingId,
           userId: session.user.id,
           hotelSlug,
-          hotelName,
-          roomName: roomName || '',
+          hotelName: sanitizeText(hotelName),
+          roomName: roomName ? sanitizeText(roomName) : '',
           checkIn: checkIn || '',
           checkOut: checkOut || '',
           nights: nights || 1,
@@ -104,8 +105,8 @@ export async function POST(request: Request) {
           bonusSpent: bonusToSpend,
           paymentMethod: paymentMethod || 'card',
           status: status || 'confirmed',
-          guestFirstName: guestFirstName || '',
-          guestLastName: guestLastName || '',
+          guestFirstName: guestFirstName ? sanitizeText(guestFirstName) : '',
+          guestLastName: guestLastName ? sanitizeText(guestLastName) : '',
           guestEmail: guestEmail || '',
           guestPhone: guestPhone || '',
         },
@@ -139,8 +140,8 @@ export async function POST(request: Request) {
       bookingId,
       userId: session?.user?.id || null,
       hotelSlug,
-      hotelName,
-      roomName: roomName || '',
+      hotelName: sanitizeText(hotelName),
+      roomName: roomName ? sanitizeText(roomName) : '',
       checkIn: checkIn || '',
       checkOut: checkOut || '',
       nights: nights || 1,
@@ -151,8 +152,8 @@ export async function POST(request: Request) {
       finalPrice: finalPrice || 0,
       paymentMethod: paymentMethod || 'card',
       status: status || 'confirmed',
-      guestFirstName: guestFirstName || '',
-      guestLastName: guestLastName || '',
+      guestFirstName: guestFirstName ? sanitizeText(guestFirstName) : '',
+      guestLastName: guestLastName ? sanitizeText(guestLastName) : '',
       guestEmail: guestEmail || '',
       guestPhone: guestPhone || '',
     },
