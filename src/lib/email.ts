@@ -92,6 +92,76 @@ function emailLayout(content: string, unsubscribeUrl?: string): string {
 </html>`;
 }
 
+// --- Auth emails ---
+
+export async function sendVerificationEmail(email: string, token: string) {
+  if (!process.env.SMTP_HOST) return;
+
+  const transporter = getTransporter();
+  const baseUrl = getBaseUrl();
+  const verifyUrl = `${baseUrl}/api/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+
+  const content = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:48px;margin-bottom:8px;">✉️</div>
+      <h1 style="font-size:22px;color:#1a1a1a;margin:0;">Подтвердите email</h1>
+    </div>
+    <p style="font-size:15px;color:#333;line-height:1.6;">
+      Спасибо за регистрацию на Гостинец! Пожалуйста, подтвердите ваш email, нажав на кнопку ниже.
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="${verifyUrl}" style="display:inline-block;background:#2E86AB;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:bold;">
+        Подтвердить email
+      </a>
+    </div>
+    <p style="font-size:13px;color:#888;line-height:1.6;">
+      Ссылка действительна 24 часа. Если вы не регистрировались, просто проигнорируйте это письмо.
+    </p>`;
+
+  const html = emailLayout(content);
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || 'Гостинец <noreply@gostinets.ru>',
+    to: email,
+    subject: 'Подтвердите ваш email — Гостинец',
+    html,
+  });
+}
+
+export async function sendPasswordResetEmail(email: string, token: string) {
+  if (!process.env.SMTP_HOST) return;
+
+  const transporter = getTransporter();
+  const baseUrl = getBaseUrl();
+  const resetUrl = `${baseUrl}/auth/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+
+  const content = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:48px;margin-bottom:8px;">🔑</div>
+      <h1 style="font-size:22px;color:#1a1a1a;margin:0;">Сброс пароля</h1>
+    </div>
+    <p style="font-size:15px;color:#333;line-height:1.6;">
+      Вы запросили сброс пароля. Нажмите на кнопку ниже, чтобы установить новый пароль.
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="${resetUrl}" style="display:inline-block;background:#2E86AB;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:bold;">
+        Установить новый пароль
+      </a>
+    </div>
+    <p style="font-size:13px;color:#888;line-height:1.6;">
+      Ссылка действительна 1 час. Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
+    </p>`;
+
+  const html = emailLayout(content);
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || 'Гостинец <noreply@gostinets.ru>',
+    to: email,
+    subject: 'Сброс пароля — Гостинец',
+    html,
+  });
+}
+
 // --- Notification emails ---
 
 export async function sendCheckinReminder(booking: Booking & { user?: { id: string } | null }) {

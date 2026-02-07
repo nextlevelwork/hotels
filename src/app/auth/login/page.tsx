@@ -84,6 +84,12 @@ function LoginForm() {
             required
           />
 
+          <div className="flex justify-end">
+            <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
+              Забыли пароль?
+            </Link>
+          </div>
+
           <Button type="submit" fullWidth size="lg" loading={loading}>
             Войти
           </Button>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { User, Phone, Mail, Lock, Save, Bell } from 'lucide-react';
+import { User, Phone, Mail, Lock, Save, Bell, AlertTriangle } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { useToastStore } from '@/store/toast-store';
@@ -12,6 +12,7 @@ interface ProfileData {
   email: string;
   phone: string | null;
   emailNotifications: boolean;
+  emailVerified: string | null;
   createdAt: string;
 }
 
@@ -32,6 +33,9 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+
+  // Email verification
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   useEffect(() => {
     fetch('/api/profile')
@@ -124,6 +128,22 @@ export default function ProfilePage() {
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendingVerification(true);
+    try {
+      const res = await fetch('/api/auth/resend-verification', { method: 'POST' });
+      if (res.ok) {
+        addToast('success', 'Письмо отправлено на вашу почту');
+      } else {
+        addToast('error', 'Ошибка отправки письма');
+      }
+    } catch {
+      addToast('error', 'Ошибка отправки');
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center text-muted">
@@ -135,6 +155,27 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
       <h1 className="text-2xl font-bold text-foreground mb-8">Профиль</h1>
+
+      {/* Email verification banner */}
+      {profile && !profile.emailVerified && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-amber-800">Email не подтверждён</p>
+            <p className="text-xs text-amber-600 mt-0.5">
+              Подтвердите email для повышения безопасности аккаунта
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleResendVerification}
+            loading={resendingVerification}
+          >
+            Отправить письмо
+          </Button>
+        </div>
+      )}
 
       {/* Profile Info */}
       <div className="bg-white rounded-2xl border border-border p-6 mb-6">

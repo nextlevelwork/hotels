@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { generateVerificationToken } from '@/lib/tokens';
+import { sendVerificationEmail } from '@/lib/email';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Имя должно быть не менее 2 символов'),
@@ -38,6 +40,11 @@ export async function POST(request: Request) {
       data: { name, email, phone, passwordHash },
       select: { id: true, name: true, email: true },
     });
+
+    // Send verification email (non-blocking, don't fail registration if email fails)
+    generateVerificationToken(email)
+      .then((token) => sendVerificationEmail(email, token))
+      .catch(() => {});
 
     return NextResponse.json(user, { status: 201 });
   } catch {
