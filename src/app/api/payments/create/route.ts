@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createPayment } from '@/lib/yookassa';
+import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
+  const limited = applyRateLimit(request, RATE_LIMITS.payments, 'payments:create');
+  if (limited) return limited;
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });

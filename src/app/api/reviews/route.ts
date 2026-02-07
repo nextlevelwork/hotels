@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   const hotelSlug = request.nextUrl.searchParams.get('hotelSlug');
@@ -19,6 +20,9 @@ export async function GET(request: NextRequest) {
 const TRAVELER_TYPES = ['business', 'couple', 'family', 'solo', 'friends'];
 
 export async function POST(request: NextRequest) {
+  const limited = applyRateLimit(request, RATE_LIMITS.api, 'reviews:create');
+  if (limited) return limited;
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Не авторизован' }, { status: 401 });

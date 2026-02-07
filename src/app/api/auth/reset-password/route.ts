@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/tokens';
+import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 const schema = z.object({
   email: z.string().email(),
@@ -11,6 +12,9 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = applyRateLimit(request, RATE_LIMITS.auth, 'auth:reset');
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const parsed = schema.safeParse(body);

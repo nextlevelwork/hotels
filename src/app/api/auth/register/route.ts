@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { generateVerificationToken } from '@/lib/tokens';
 import { sendVerificationEmail } from '@/lib/email';
+import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Имя должно быть не менее 2 символов'),
@@ -13,6 +14,9 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const limited = applyRateLimit(request, RATE_LIMITS.auth, 'auth:register');
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);

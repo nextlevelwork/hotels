@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 interface YooKassaWebhookEvent {
   type: string;
@@ -14,6 +15,9 @@ interface YooKassaWebhookEvent {
 }
 
 export async function POST(request: Request) {
+  const limited = applyRateLimit(request, RATE_LIMITS.webhook, 'payments:webhook');
+  if (limited) return limited;
+
   let body: YooKassaWebhookEvent;
   try {
     body = await request.json();

@@ -3,12 +3,16 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { generatePasswordResetToken } from '@/lib/tokens';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { applyRateLimit, RATE_LIMITS } from '@/lib/rate-limit';
 
 const schema = z.object({
   email: z.string().email(),
 });
 
 export async function POST(request: Request) {
+  const limited = applyRateLimit(request, RATE_LIMITS.auth, 'auth:forgot');
+  if (limited) return limited;
+
   try {
     const body = await request.json();
     const parsed = schema.safeParse(body);
