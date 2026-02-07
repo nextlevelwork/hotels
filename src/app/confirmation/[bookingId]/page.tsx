@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle, Calendar, MapPin, BedDouble, CreditCard,
@@ -17,6 +17,38 @@ interface ConfirmationPageProps {
 export default function ConfirmationPage({ params }: ConfirmationPageProps) {
   const { bookingId } = use(params);
   const lastBooking = useBookingStore((s) => s.lastBooking);
+
+  // Persist booking to PostgreSQL (fire-and-forget)
+  const saved = useRef(false);
+  useEffect(() => {
+    if (saved.current || !lastBooking) return;
+    saved.current = true;
+
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bookingId: lastBooking.bookingId,
+        hotelSlug: lastBooking.hotel.slug,
+        hotelName: lastBooking.hotel.name,
+        roomName: lastBooking.room.name,
+        checkIn: lastBooking.checkIn,
+        checkOut: lastBooking.checkOut,
+        nights: lastBooking.nights,
+        guests: lastBooking.guests,
+        pricePerNight: lastBooking.pricePerNight,
+        totalPrice: lastBooking.totalPrice,
+        discount: lastBooking.discount,
+        finalPrice: lastBooking.finalPrice,
+        paymentMethod: lastBooking.paymentMethod,
+        status: lastBooking.status,
+        guestFirstName: lastBooking.guest.firstName,
+        guestLastName: lastBooking.guest.lastName,
+        guestEmail: lastBooking.guest.email,
+        guestPhone: lastBooking.guest.phone,
+      }),
+    }).catch(() => {});
+  }, [lastBooking]);
 
   const handleDownloadVoucher = () => {
     window.print();

@@ -5,6 +5,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ToastContainer from '@/components/ui/ToastContainer';
 import ScrollToTop from '@/components/ui/ScrollToTop';
+import AuthSessionProvider from '@/components/providers/SessionProvider';
+import AuthSync from '@/components/auth/AuthSync';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -54,17 +56,20 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${inter.variable} antialiased`}>
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg"
-        >
-          Перейти к содержанию
-        </a>
-        <Header />
-        <main id="main-content" className="min-h-screen">{children}</main>
-        <Footer />
-        <ToastContainer />
-        <ScrollToTop />
+        <AuthSessionProvider>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg"
+          >
+            Перейти к содержанию
+          </a>
+          <Header />
+          <main id="main-content" className="min-h-screen">{children}</main>
+          <Footer />
+          <ToastContainer />
+          <ScrollToTop />
+          <AuthSync />
+        </AuthSessionProvider>
       </body>
     </html>
   );

@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Heart, User, Home, Building2, Bookmark } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useSession, signOut } from 'next-auth/react';
+import { Search, Heart, User, Home, Bookmark, BookOpen, LogOut } from 'lucide-react';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface MobileNavProps {
 
 export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
   const navRef = useRef<HTMLDivElement>(null);
+  const { data: session } = useSession();
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -33,7 +34,6 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
     const nav = navRef.current;
     const focusableSelector = 'a, button, [tabindex]:not([tabindex="-1"])';
 
-    // Focus first element on open
     const firstFocusable = nav.querySelector(focusableSelector) as HTMLElement | null;
     setTimeout(() => firstFocusable?.focus(), 50);
 
@@ -101,12 +101,48 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
           <Heart className="h-5 w-5 text-muted" />
           <span className="font-medium">Избранное</span>
         </Link>
-        <div className="pt-2 border-t border-border mt-2">
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors w-full cursor-pointer">
-            <User className="h-5 w-5 text-muted" />
-            <span className="font-medium">Войти</span>
-          </button>
-        </div>
+
+        {session?.user ? (
+          <div className="pt-2 border-t border-border mt-2">
+            <Link
+              href="/profile"
+              onClick={onClose}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors"
+            >
+              <User className="h-5 w-5 text-muted" />
+              <span className="font-medium">Профиль</span>
+            </Link>
+            <Link
+              href="/profile/bookings"
+              onClick={onClose}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors"
+            >
+              <BookOpen className="h-5 w-5 text-muted" />
+              <span className="font-medium">Мои бронирования</span>
+            </Link>
+            <button
+              onClick={() => {
+                onClose();
+                signOut({ callbackUrl: '/' });
+              }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-danger hover:bg-gray-50 transition-colors w-full cursor-pointer"
+            >
+              <LogOut className="h-5 w-5" />
+              <span className="font-medium">Выйти</span>
+            </button>
+          </div>
+        ) : (
+          <div className="pt-2 border-t border-border mt-2">
+            <Link
+              href="/auth/login"
+              onClick={onClose}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors w-full"
+            >
+              <User className="h-5 w-5 text-muted" />
+              <span className="font-medium">Войти</span>
+            </Link>
+          </div>
+        )}
       </nav>
     </div>
   );

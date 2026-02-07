@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, Suspense, use } from 'react';
+import { useEffect, useState, Suspense, use, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { getHotel, getHotelByHid, getHotelRooms, createBooking, createOstrovokBooking, validatePromoCode } from '@/lib/api';
 import { useBookingStore } from '@/store/booking-store';
 import { formatPriceShort, pluralize } from '@/lib/utils';
@@ -24,6 +25,7 @@ const steps = [
 function BookingContent({ hotelSlug }: { hotelSlug: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const store = useBookingStore();
   const [hotel, setHotel] = useState<Hotel | null>(null);
   const [rooms, setRooms] = useState<RoomType[]>([]);
@@ -40,6 +42,7 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
   const [phone, setPhone] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const autoFillDone = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -82,6 +85,27 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hotelSlug]);
+
+  // Auto-fill guest info from session
+  useEffect(() => {
+    if (autoFillDone.current || !session?.user) return;
+    autoFillDone.current = true;
+
+    const userName = session.user.name || '';
+    const parts = userName.split(' ');
+    if (!firstName && parts[0]) setFirstName(parts[0]);
+    if (!lastName && parts.length > 1) setLastName(parts.slice(1).join(' '));
+    if (!email && session.user.email) setEmail(session.user.email);
+
+    // Fetch phone from profile (not in standard session)
+    fetch('/api/profile')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.phone && !phone) setPhone(data.phone);
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   const validateStep2 = () => {
     const errors: Record<string, string> = {};

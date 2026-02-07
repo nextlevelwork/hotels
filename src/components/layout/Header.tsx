@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Menu, X, Search, User, Heart, Globe } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useFavoritesStore } from '@/store/favorites-store';
+import UserMenu from '@/components/auth/UserMenu';
 import MobileNav from './MobileNav';
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const favCount = useFavoritesStore((s) => s.slugs.length);
+  const { data: session } = useSession();
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-border">
@@ -57,10 +59,17 @@ export default function Header() {
                 </span>
               )}
             </Link>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:border-primary/30 hover:bg-primary/5 transition-colors cursor-pointer">
-              <User className="h-4 w-4" />
-              <span className="text-sm font-medium">Войти</span>
-            </button>
+            {session?.user ? (
+              <UserMenu />
+            ) : (
+              <Link
+                href="/auth/login"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:border-primary/30 hover:bg-primary/5 transition-colors"
+              >
+                <User className="h-4 w-4" />
+                <span className="text-sm font-medium">Войти</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
