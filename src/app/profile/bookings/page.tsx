@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, BedDouble, Search, Check, MessageSquarePlus } from 'lucide-react';
+import { Calendar, BedDouble, Search, Check, MessageSquarePlus, Gift } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { formatPriceShort, pluralize } from '@/lib/utils';
 
@@ -17,6 +17,8 @@ interface BookingItem {
   nights: number;
   guests: number;
   finalPrice: number;
+  bonusSpent: number;
+  bonusEarned: number;
   status: string;
   paymentMethod: string;
   createdAt: string;
@@ -111,6 +113,22 @@ export default function BookingsPage() {
                         {pluralize(booking.nights, 'ночь', 'ночи', 'ночей')}
                       </span>
                     </div>
+
+                    {/* Bonus badges */}
+                    {(booking.bonusEarned > 0 || booking.bonusSpent > 0) && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {booking.bonusEarned > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-medium rounded-full">
+                            <Gift className="h-3 w-3" /> +{booking.bonusEarned.toLocaleString('ru-RU')} бонусов
+                          </span>
+                        )}
+                        {booking.bonusSpent > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 text-xs font-medium rounded-full">
+                            <Gift className="h-3 w-3" /> Списано {booking.bonusSpent.toLocaleString('ru-RU')}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Review actions */}
                     {canReview && (

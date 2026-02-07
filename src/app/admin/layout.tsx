@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookOpen, Users, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, MessageSquare, Gift } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/admin/bookings', label: 'Бронирования', icon: BookOpen },
   { href: '/admin/reviews', label: 'Отзывы', icon: MessageSquare },
   { href: '/admin/users', label: 'Пользователи', icon: Users },
+  { href: '/admin/loyalty', label: 'Лояльность', icon: Gift },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

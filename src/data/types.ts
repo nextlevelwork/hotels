@@ -220,6 +220,8 @@ export interface Booking {
   totalPrice: number;
   discount: number;
   finalPrice: number;
+  bonusSpent?: number;
+  bonusEarned?: number;
   paymentMethod: 'card' | 'sbp' | 'cash';
   status: 'confirmed' | 'pending' | 'cancelled';
   createdAt: string;

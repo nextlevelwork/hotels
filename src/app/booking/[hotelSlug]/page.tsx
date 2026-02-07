@@ -7,12 +7,13 @@ import { getHotel, getHotelByHid, getHotelRooms, createBooking, createOstrovokBo
 import { useBookingStore } from '@/store/booking-store';
 import { formatPriceShort, pluralize } from '@/lib/utils';
 import { nightsCount } from '@/lib/format';
+import { maxBonusSpend } from '@/lib/loyalty';
 import Stepper from '@/components/ui/Stepper';
 import Button from '@/components/ui/Button';
 import type { Hotel, RoomType } from '@/data/types';
 import {
   BedDouble, Users, Calendar, CreditCard, Smartphone, Banknote,
-  ShieldCheck, Tag, ChevronLeft, Check, Gift
+  ShieldCheck, Tag, ChevronLeft, Check, Gift, Star
 } from 'lucide-react';
 
 const steps = [
@@ -34,6 +35,9 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
   const [bookingProgress, setBookingProgress] = useState<string>('');
   const [promoInput, setPromoInput] = useState('');
   const [promoStatus, setPromoStatus] = useState<string>('');
+  const [bonusBalance, setBonusBalance] = useState(0);
+  const [bonusTier, setBonusTier] = useState<{ label: string; cashbackPercent: number; color: string; bgColor: string } | null>(null);
+  const [bonusLoaded, setBonusLoaded] = useState(false);
 
   // Guest form state
   const [firstName, setFirstName] = useState('');
@@ -105,6 +109,21 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
       })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
+
+  // Fetch bonus balance
+  useEffect(() => {
+    if (!session?.user) return;
+    fetch('/api/profile/bonus')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.balance !== undefined) {
+          setBonusBalance(data.balance);
+          setBonusTier(data.tier);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setBonusLoaded(true));
   }, [session]);
 
   const validateStep2 = () => {
@@ -420,24 +439,36 @@ function BookingContent({ hotelSlug }: { hotelSlug: string }) {
               </div>
 
               {/* Bonus Rubles */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2 flex items-center gap-1">
-                  <Gift className="h-4 w-4" /> Бонусные рубли
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min={0}
-                    max={Math.min(1000, subtotal)}
-                    step={100}
-                    value={store.bonusRubles}
-                    onChange={(e) => store.setBonusRubles(Number(e.target.value))}
-                    className="flex-1 accent-primary"
-                  />
-                  <span className="text-sm font-semibold w-24 text-right">{formatPriceShort(store.bonusRubles)}</span>
-                </div>
-                <p className="text-xs text-muted mt-1">У вас 1 000 бонусных рублей</p>
-              </div>
+              {session?.user && bonusLoaded && bonusBalance > 0 && (() => {
+                const maxBonus = maxBonusSpend(subtotal, bonusBalance);
+                return (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium mb-2 flex items-center gap-1">
+                      <Gift className="h-4 w-4" /> Бонусные рубли
+                      {bonusTier && (
+                        <span className={`ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${bonusTier.bgColor} ${bonusTier.color}`}>
+                          <Star className="h-3 w-3" /> {bonusTier.label} ({bonusTier.cashbackPercent}%)
+                        </span>
+                      )}
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={0}
+                        max={maxBonus}
+                        step={100}
+                        value={Math.min(store.bonusRubles, maxBonus)}
+                        onChange={(e) => store.setBonusRubles(Number(e.target.value))}
+                        className="flex-1 accent-primary"
+                      />
+                      <span className="text-sm font-semibold w-24 text-right">{formatPriceShort(store.bonusRubles)}</span>
+                    </div>
+                    <p className="text-xs text-muted mt-1">
+                      У вас {formatPriceShort(bonusBalance)} бонусных рублей (макс. списание — {formatPriceShort(maxBonus)})
+                    </p>
+                  </div>
+                );
+              })()}
 
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => store.prevStep()}>

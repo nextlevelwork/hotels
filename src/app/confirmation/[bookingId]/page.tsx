@@ -4,11 +4,12 @@ import { use, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle, Calendar, MapPin, BedDouble, CreditCard,
-  Download, Mail, Phone, MessageCircle, Home, ArrowRight
+  Download, Mail, Phone, MessageCircle, Home, ArrowRight, Gift
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useBookingStore } from '@/store/booking-store';
 import { formatPriceShort, pluralize } from '@/lib/utils';
+import { calculateBonusEarned } from '@/lib/loyalty';
 
 interface ConfirmationPageProps {
   params: Promise<{ bookingId: string }>;
@@ -40,6 +41,7 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
         totalPrice: lastBooking.totalPrice,
         discount: lastBooking.discount,
         finalPrice: lastBooking.finalPrice,
+        bonusSpent: lastBooking.bonusSpent || 0,
         paymentMethod: lastBooking.paymentMethod,
         status: lastBooking.status,
         guestFirstName: lastBooking.guest.firstName,
@@ -158,6 +160,11 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
                     Скидка: {formatPriceShort(lastBooking.discount)}
                   </div>
                 )}
+                {lastBooking && (lastBooking.bonusSpent ?? 0) > 0 && (
+                  <div className="text-xs text-success mt-0.5">
+                    Бонусов списано: {formatPriceShort(lastBooking.bonusSpent!)}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -194,6 +201,23 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
           </button>
         </div>
       </div>
+
+      {/* Bonus Preview */}
+      {lastBooking && lastBooking.finalPrice > 0 && (
+        <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl border border-yellow-200 p-6 mb-8 print:hidden">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center shrink-0">
+              <Gift className="h-5 w-5 text-yellow-600" />
+            </div>
+            <div>
+              <h3 className="font-medium text-sm">Бонусные рубли</h3>
+              <p className="text-sm text-muted">
+                После выезда вам будет начислено ~<span className="font-semibold text-yellow-700">{formatPriceShort(calculateBonusEarned(lastBooking.finalPrice, 0))}</span> бонусных рублей (кешбэк 5–10% в зависимости от уровня)
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Next Steps */}
       <div className="bg-white rounded-2xl border border-border p-6 mb-8 print:hidden">

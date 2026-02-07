@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { sendBookingConfirmation } from '@/lib/email';
+import { maxBonusSpend } from '@/lib/loyalty';
 
 export async function GET() {
   const session = await auth();
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
     guestLastName,
     guestEmail,
     guestPhone,
+    bonusSpent,
   } = body;
 
   if (!bookingId || !hotelSlug || !hotelName) {
@@ -52,6 +54,82 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Бронирование уже сохранено' });
   }
 
+  const bonusToSpend = bonusSpent && bonusSpent > 0 ? Math.round(bonusSpent) : 0;
+
+  // If bonus spending requested, validate and process atomically
+  if (bonusToSpend > 0 && session?.user?.id) {
+    const subtotal = (totalPrice || 0);
+    const maxAllowed = maxBonusSpend(subtotal, Infinity); // 50% check
+
+    if (bonusToSpend > maxAllowed) {
+      return NextResponse.json(
+        { error: `Нельзя списать больше 50% от стоимости (макс. ${maxAllowed} ₽)` },
+        { status: 400 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { bonusBalance: true },
+    });
+
+    if (!user || bonusToSpend > user.bonusBalance) {
+      return NextResponse.json(
+        { error: 'Недостаточно бонусных рублей' },
+        { status: 400 }
+      );
+    }
+
+    // Atomic transaction: create booking + deduct balance + log transaction
+    const booking = await prisma.$transaction(async (tx) => {
+      const b = await tx.booking.create({
+        data: {
+          bookingId,
+          userId: session.user.id,
+          hotelSlug,
+          hotelName,
+          roomName: roomName || '',
+          checkIn: checkIn || '',
+          checkOut: checkOut || '',
+          nights: nights || 1,
+          guests: guests || 1,
+          pricePerNight: pricePerNight || 0,
+          totalPrice: totalPrice || 0,
+          discount: discount || 0,
+          finalPrice: finalPrice || 0,
+          bonusSpent: bonusToSpend,
+          paymentMethod: paymentMethod || 'card',
+          status: status || 'confirmed',
+          guestFirstName: guestFirstName || '',
+          guestLastName: guestLastName || '',
+          guestEmail: guestEmail || '',
+          guestPhone: guestPhone || '',
+        },
+      });
+
+      await tx.user.update({
+        where: { id: session.user.id },
+        data: { bonusBalance: { decrement: bonusToSpend } },
+      });
+
+      await tx.bonusTransaction.create({
+        data: {
+          userId: session.user.id,
+          amount: -bonusToSpend,
+          type: 'spend',
+          bookingId: b.id,
+          description: `Списание за бронирование ${bookingId}`,
+        },
+      });
+
+      return b;
+    });
+
+    sendBookingConfirmation(booking).catch(console.error);
+    return NextResponse.json(booking, { status: 201 });
+  }
+
+  // Normal flow (no bonus)
   const booking = await prisma.booking.create({
     data: {
       bookingId,

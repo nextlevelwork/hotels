@@ -280,6 +280,7 @@ export async function createBooking(data: {
     totalPrice: subtotal,
     discount: discount + promoDiscount,
     finalPrice,
+    bonusSpent: discount,
     paymentMethod: data.paymentMethod,
     status: 'confirmed',
     createdAt: new Date().toISOString(),

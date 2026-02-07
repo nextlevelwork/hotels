@@ -11,7 +11,7 @@ export async function GET() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalBookings, totalUsers, revenue, bookingsToday, recentBookings, totalReviews, rejectedReviews] =
+  const [totalBookings, totalUsers, revenue, bookingsToday, recentBookings, totalReviews, rejectedReviews, bonusIssued, bonusSpent] =
     await Promise.all([
       prisma.booking.count(),
       prisma.user.count(),
@@ -23,6 +23,14 @@ export async function GET() {
       }),
       prisma.review.count(),
       prisma.review.count({ where: { status: 'rejected' } }),
+      prisma.bonusTransaction.aggregate({
+        where: { type: 'earn' },
+        _sum: { amount: true },
+      }),
+      prisma.bonusTransaction.aggregate({
+        where: { type: 'spend' },
+        _sum: { amount: true },
+      }),
     ]);
 
   return NextResponse.json({
@@ -33,5 +41,7 @@ export async function GET() {
     recentBookings,
     totalReviews,
     rejectedReviews,
+    totalBonusIssued: bonusIssued._sum.amount || 0,
+    totalBonusSpent: Math.abs(bonusSpent._sum.amount || 0),
   });
 }

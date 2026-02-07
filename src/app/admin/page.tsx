@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BookOpen, Users, DollarSign, CalendarCheck } from 'lucide-react';
+import { BookOpen, Users, DollarSign, CalendarCheck, Gift, TrendingDown } from 'lucide-react';
 import { formatPriceShort } from '@/lib/utils';
 
 interface Stats {
@@ -9,6 +9,8 @@ interface Stats {
   totalUsers: number;
   totalRevenue: number;
   bookingsToday: number;
+  totalBonusIssued: number;
+  totalBonusSpent: number;
   recentBookings: Array<{
     id: string;
     bookingId: string;
@@ -67,6 +69,8 @@ export default function AdminDashboard() {
     { label: 'Пользователи', value: stats.totalUsers, icon: Users, color: 'text-blue-600 bg-blue-100' },
     { label: 'Выручка', value: formatPriceShort(stats.totalRevenue), icon: DollarSign, color: 'text-green-600 bg-green-100' },
     { label: 'Сегодня', value: stats.bookingsToday, icon: CalendarCheck, color: 'text-orange-600 bg-orange-100' },
+    { label: 'Бонусы выдано', value: formatPriceShort(stats.totalBonusIssued), icon: Gift, color: 'text-yellow-600 bg-yellow-100' },
+    { label: 'Бонусы списано', value: formatPriceShort(stats.totalBonusSpent), icon: TrendingDown, color: 'text-purple-600 bg-purple-100' },
   ];
 
   return (
@@ -74,7 +78,7 @@ export default function AdminDashboard() {
       <h1 className="text-2xl font-bold">Дашборд</h1>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((card) => {
           const Icon = card.icon;
           return (
