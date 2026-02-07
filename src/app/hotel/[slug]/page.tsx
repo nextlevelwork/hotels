@@ -16,6 +16,9 @@ import StickyBookingBar from '@/components/hotel/StickyBookingBar';
 import GuaranteeInfo from '@/components/hotel/GuaranteeInfo';
 import HotelSidebarActions from '@/components/hotel/HotelSidebarActions';
 import Link from 'next/link';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import type { Review } from '@/data/types';
 
 export async function generateStaticParams() {
   return allHotels.map((hotel) => ({ slug: hotel.slug }));
@@ -59,8 +62,50 @@ export default async function HotelPage({ params }: HotelPageProps) {
   if (!hotel) notFound();
 
   const rooms = await getHotelRooms(hotel.id);
-  const reviews = await getHotelReviews(hotel.id);
+  const mockReviews = await getHotelReviews(hotel.id);
   const reviewSummary = await getHotelReviewSummary(hotel.id);
+
+  // Fetch DB reviews for this hotel
+  const dbReviews = await prisma.review.findMany({
+    where: { hotelSlug: slug, status: 'approved' },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Map DB reviews to Review type
+  const dbMapped: Review[] = dbReviews.map((r) => ({
+    id: r.id,
+    hotelId: hotel.id,
+    authorName: r.authorName,
+    rating: r.rating,
+    date: r.createdAt.toISOString(),
+    title: r.title,
+    text: r.text,
+    pros: r.pros ?? undefined,
+    cons: r.cons ?? undefined,
+    travelerType: r.travelerType as Review['travelerType'],
+  }));
+
+  // Merge: DB reviews first, then mock reviews
+  const reviews = [...dbMapped, ...mockReviews];
+
+  // Determine if current user can review
+  let canReview = false;
+  const session = await auth();
+  if (session?.user?.id) {
+    const today = new Date().toISOString().split('T')[0];
+    const hasCompletedBooking = await prisma.booking.findFirst({
+      where: {
+        userId: session.user.id,
+        hotelSlug: slug,
+        status: 'confirmed',
+        checkOut: { lt: today },
+      },
+    });
+    const hasExistingReview = await prisma.review.findUnique({
+      where: { hotelSlug_userId: { hotelSlug: slug, userId: session.user.id } },
+    });
+    canReview = !!hasCompletedBooking && !hasExistingReview;
+  }
 
   const isVerified = hotel.isVerified !== false; // mock hotels are always verified
 
@@ -164,7 +209,7 @@ export default async function HotelPage({ params }: HotelPageProps) {
 
             {/* Reviews */}
             <div id="reviews">
-              <ReviewSection reviews={reviews} summary={reviewSummary} />
+              <ReviewSection reviews={reviews} summary={reviewSummary} hotelSlug={slug} canReview={canReview} />
             </div>
           </div>
 

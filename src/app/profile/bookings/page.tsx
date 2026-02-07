@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Calendar, BedDouble, Search } from 'lucide-react';
+import { Calendar, BedDouble, Search, Check, MessageSquarePlus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { formatPriceShort, pluralize } from '@/lib/utils';
 
@@ -28,15 +28,24 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   cancelled: { label: 'Отменено', className: 'bg-danger/10 text-danger border-danger/20' },
 };
 
+function isCheckOutPast(checkOut: string): boolean {
+  const today = new Date().toISOString().split('T')[0];
+  return checkOut < today;
+}
+
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<BookingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reviewedSlugs, setReviewedSlugs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetch('/api/bookings')
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setBookings(data);
+    Promise.all([
+      fetch('/api/bookings').then((res) => res.json()),
+      fetch('/api/reviews/my').then((res) => res.json()).catch(() => []),
+    ])
+      .then(([bookingsData, slugs]) => {
+        if (Array.isArray(bookingsData)) setBookings(bookingsData);
+        if (Array.isArray(slugs)) setReviewedSlugs(new Set(slugs));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -72,6 +81,8 @@ export default function BookingsPage() {
         <div className="space-y-4">
           {bookings.map((booking) => {
             const statusInfo = statusConfig[booking.status] || statusConfig.confirmed;
+            const canReview = booking.status === 'confirmed' && isCheckOutPast(booking.checkOut);
+            const hasReviewed = reviewedSlugs.has(booking.hotelSlug);
             return (
               <div
                 key={booking.id}
@@ -100,6 +111,26 @@ export default function BookingsPage() {
                         {pluralize(booking.nights, 'ночь', 'ночи', 'ночей')}
                       </span>
                     </div>
+
+                    {/* Review actions */}
+                    {canReview && (
+                      <div className="mt-3">
+                        {hasReviewed ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-success/10 text-success text-xs font-medium rounded-full">
+                            <Check className="h-3.5 w-3.5" />
+                            Отзыв оставлен
+                          </span>
+                        ) : (
+                          <Link
+                            href={`/hotel/${booking.hotelSlug}#reviews`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-medium rounded-lg hover:bg-primary/20 transition-colors"
+                          >
+                            <MessageSquarePlus className="h-3.5 w-3.5" />
+                            Оставить отзыв
+                          </Link>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-right">

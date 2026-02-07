@@ -1,15 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { Star, ThumbsUp, ThumbsDown, Sparkles, User } from 'lucide-react';
+import { Star, ThumbsUp, ThumbsDown, Sparkles, User, PenSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatRelative } from '@/lib/format';
 import RatingBadge from '@/components/ui/RatingBadge';
+import Modal from '@/components/ui/Modal';
+import ReviewForm from '@/components/hotel/ReviewForm';
 import type { Review, ReviewSummary } from '@/data/types';
 
 interface ReviewSectionProps {
   reviews: Review[];
   summary: ReviewSummary | null;
+  hotelSlug?: string;
+  canReview?: boolean;
 }
 
 const travelerLabels: Record<string, string> = {
@@ -39,28 +43,87 @@ function sortReviews(items: Review[], sortBy: SortBy): Review[] {
   return sorted;
 }
 
-export default function ReviewSection({ reviews, summary }: ReviewSectionProps) {
+export default function ReviewSection({ reviews: initialReviews, summary, hotelSlug, canReview }: ReviewSectionProps) {
+  const [reviews, setReviews] = useState(initialReviews);
   const [filter, setFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<SortBy>('date');
+  const [showForm, setShowForm] = useState(false);
 
   const filtered = filter === 'all' ? reviews : reviews.filter(r => r.travelerType === filter);
   const sorted = sortReviews(filtered, sortBy);
+
+  const handleReviewSuccess = () => {
+    setShowForm(false);
+    // Refetch DB reviews and prepend
+    if (hotelSlug) {
+      fetch(`/api/reviews?hotelSlug=${hotelSlug}`)
+        .then((res) => res.json())
+        .then((dbReviews: Array<{ id: string; authorName: string; rating: number; createdAt: string; title: string; text: string; pros?: string; cons?: string; travelerType: string }>) => {
+          const mapped: Review[] = dbReviews.map((r) => ({
+            id: r.id,
+            hotelId: hotelSlug,
+            authorName: r.authorName,
+            rating: r.rating,
+            date: r.createdAt,
+            title: r.title,
+            text: r.text,
+            pros: r.pros,
+            cons: r.cons,
+            travelerType: r.travelerType as Review['travelerType'],
+          }));
+          // Merge: DB reviews first, then mock reviews (those without DB id pattern)
+          const mockReviews = initialReviews.filter(
+            (mr) => !mapped.some((db) => db.id === mr.id)
+          );
+          setReviews([...mapped, ...mockReviews]);
+        })
+        .catch(() => {});
+    }
+  };
 
   // No reviews at all — show a minimal message
   if (reviews.length === 0 && !summary) {
     return (
       <div>
-        <h2 className="text-xl font-bold mb-6">Отзывы</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold">Отзывы</h2>
+          {canReview && hotelSlug && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
+            >
+              <PenSquare className="h-4 w-4" />
+              Написать отзыв
+            </button>
+          )}
+        </div>
         <div className="bg-white rounded-xl border border-border p-8 text-center">
           <p className="text-muted text-sm">Отзывов пока нет. Станьте первым, кто оставит отзыв об этом отеле!</p>
         </div>
+
+        {hotelSlug && (
+          <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Написать отзыв" size="lg">
+            <ReviewForm hotelSlug={hotelSlug} onSuccess={handleReviewSuccess} />
+          </Modal>
+        )}
       </div>
     );
   }
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">Отзывы</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Отзывы</h2>
+        {canReview && hotelSlug && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors cursor-pointer"
+          >
+            <PenSquare className="h-4 w-4" />
+            Написать отзыв
+          </button>
+        )}
+      </div>
 
       {/* AI Summary */}
       {summary && (
@@ -203,6 +266,12 @@ export default function ReviewSection({ reviews, summary }: ReviewSectionProps) 
           <p className="text-center text-muted py-8">Нет отзывов для выбранного фильтра</p>
         )}
       </div>
+
+      {hotelSlug && (
+        <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Написать отзыв" size="lg">
+          <ReviewForm hotelSlug={hotelSlug} onSuccess={handleReviewSuccess} />
+        </Modal>
+      )}
     </div>
   );
 }

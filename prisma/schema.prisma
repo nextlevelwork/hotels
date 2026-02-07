@@ -23,6 +23,7 @@ model User {
   sessions  Session[]
   bookings  Booking[]
   favorites Favorite[]
+  reviews   Review[]
 }
 
 model Account {
@@ -101,5 +102,27 @@ model Favorite {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, hotelSlug])
+  @@index([userId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  hotelSlug    String
+  userId       String
+  authorName   String
+  rating       Int
+  title        String
+  text         String
+  pros         String?
+  cons         String?
+  travelerType String
+  status       String   @default("approved")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([hotelSlug, userId])
+  @@index([hotelSlug])
   @@index([userId])
 }

@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, BookOpen, Users } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/admin', label: 'Дашборд', icon: LayoutDashboard },
   { href: '/admin/bookings', label: 'Бронирования', icon: BookOpen },
+  { href: '/admin/reviews', label: 'Отзывы', icon: MessageSquare },
   { href: '/admin/users', label: 'Пользователи', icon: Users },
 ];
 

@@ -11,7 +11,7 @@ export async function GET() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalBookings, totalUsers, revenue, bookingsToday, recentBookings] =
+  const [totalBookings, totalUsers, revenue, bookingsToday, recentBookings, totalReviews, rejectedReviews] =
     await Promise.all([
       prisma.booking.count(),
       prisma.user.count(),
@@ -21,6 +21,8 @@ export async function GET() {
         orderBy: { createdAt: 'desc' },
         take: 5,
       }),
+      prisma.review.count(),
+      prisma.review.count({ where: { status: 'rejected' } }),
     ]);
 
   return NextResponse.json({
@@ -29,5 +31,7 @@ export async function GET() {
     totalRevenue: revenue._sum.finalPrice || 0,
     bookingsToday,
     recentBookings,
+    totalReviews,
+    rejectedReviews,
   });
 }
