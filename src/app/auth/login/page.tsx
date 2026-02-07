@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Mail, Lock, Globe } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { useToastStore } from '@/store/toast-store';
 
 function LoginForm() {
@@ -57,7 +58,10 @@ function LoginForm() {
           <p className="text-muted mt-2">Войдите, чтобы управлять бронированиями и избранным</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-border p-6 space-y-4">
+          <SocialLoginButtons callbackUrl={callbackUrl} />
+
+          <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-danger/10 text-danger text-sm rounded-lg px-4 py-3">
               {error}
@@ -93,7 +97,8 @@ function LoginForm() {
           <Button type="submit" fullWidth size="lg" loading={loading}>
             Войти
           </Button>
-        </form>
+          </form>
+        </div>
 
         <p className="text-center text-sm text-muted mt-6">
           Нет аккаунта?{' '}

@@ -11,14 +11,15 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, phone: true, emailNotifications: true, emailVerified: true, createdAt: true },
+    select: { id: true, name: true, email: true, phone: true, emailNotifications: true, emailVerified: true, createdAt: true, passwordHash: true },
   });
 
   if (!user) {
     return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  const { passwordHash, ...rest } = user;
+  return NextResponse.json({ ...rest, hasPassword: !!passwordHash });
 }
 
 export async function PATCH(request: Request) {

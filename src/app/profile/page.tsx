@@ -14,6 +14,7 @@ interface ProfileData {
   emailNotifications: boolean;
   emailVerified: string | null;
   createdAt: string;
+  hasPassword: boolean;
 }
 
 export default function ProfilePage() {
@@ -252,47 +253,49 @@ export default function ProfilePage() {
       </div>
 
       {/* Change Password */}
-      <div className="bg-white rounded-2xl border border-border p-6">
-        <h2 className="text-lg font-semibold mb-4">Сменить пароль</h2>
+      {profile?.hasPassword && (
+        <div className="bg-white rounded-2xl border border-border p-6">
+          <h2 className="text-lg font-semibold mb-4">Сменить пароль</h2>
 
-        {passwordError && (
-          <div className="bg-danger/10 text-danger text-sm rounded-lg px-4 py-3 mb-4">
-            {passwordError}
+          {passwordError && (
+            <div className="bg-danger/10 text-danger text-sm rounded-lg px-4 py-3 mb-4">
+              {passwordError}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <Input
+              label="Текущий пароль"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              icon={<Lock className="h-4 w-4" />}
+            />
+
+            <Input
+              label="Новый пароль"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              icon={<Lock className="h-4 w-4" />}
+              placeholder="Минимум 6 символов"
+            />
+
+            <Input
+              label="Подтверждение нового пароля"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              icon={<Lock className="h-4 w-4" />}
+            />
+
+            <Button onClick={handleChangePassword} loading={changingPassword} variant="outline">
+              <Lock className="h-4 w-4 mr-2" />
+              Сменить пароль
+            </Button>
           </div>
-        )}
-
-        <div className="space-y-4">
-          <Input
-            label="Текущий пароль"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            icon={<Lock className="h-4 w-4" />}
-          />
-
-          <Input
-            label="Новый пароль"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            icon={<Lock className="h-4 w-4" />}
-            placeholder="Минимум 6 символов"
-          />
-
-          <Input
-            label="Подтверждение нового пароля"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            icon={<Lock className="h-4 w-4" />}
-          />
-
-          <Button onClick={handleChangePassword} loading={changingPassword} variant="outline">
-            <Lock className="h-4 w-4 mr-2" />
-            Сменить пароль
-          </Button>
         </div>
-      </div>
+      )}
 
       {/* Account Info */}
       {profile?.createdAt && (

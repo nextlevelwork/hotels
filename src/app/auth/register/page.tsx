@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Mail, Lock, User, Phone, Globe } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons';
 import { useToastStore } from '@/store/toast-store';
 
 export default function RegisterPage() {
@@ -82,7 +83,10 @@ export default function RegisterPage() {
           <p className="text-muted mt-2">Зарегистрируйтесь для сохранения бронирований и избранного</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border p-6 space-y-4">
+        <div className="bg-white rounded-2xl border border-border p-6 space-y-4">
+          <SocialLoginButtons callbackUrl="/" />
+
+          <form onSubmit={handleSubmit} className="space-y-4">
           {errors.form && (
             <div className="bg-danger/10 text-danger text-sm rounded-lg px-4 py-3">
               {errors.form}
@@ -144,7 +148,8 @@ export default function RegisterPage() {
           <Button type="submit" fullWidth size="lg" loading={loading}>
             Зарегистрироваться
           </Button>
-        </form>
+          </form>
+        </div>
 
         <p className="text-center text-sm text-muted mt-6">
           Уже есть аккаунт?{' '}
