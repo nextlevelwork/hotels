@@ -11,7 +11,7 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, phone: true, createdAt: true },
+    select: { id: true, name: true, email: true, phone: true, emailNotifications: true, createdAt: true },
   });
 
   if (!user) {
@@ -28,7 +28,7 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json();
-  const { name, phone, currentPassword, newPassword } = body;
+  const { name, phone, currentPassword, newPassword, emailNotifications } = body;
 
   // If changing password
   if (newPassword) {
@@ -60,14 +60,15 @@ export async function PATCH(request: Request) {
   }
 
   // Update profile fields
-  const updateData: Record<string, string> = {};
+  const updateData: Record<string, string | boolean> = {};
   if (name !== undefined) updateData.name = name;
   if (phone !== undefined) updateData.phone = phone;
+  if (typeof emailNotifications === 'boolean') updateData.emailNotifications = emailNotifications;
 
   const updated = await prisma.user.update({
     where: { id: session.user.id },
     data: updateData,
-    select: { id: true, name: true, email: true, phone: true },
+    select: { id: true, name: true, email: true, phone: true, emailNotifications: true },
   });
 
   return NextResponse.json(updated);

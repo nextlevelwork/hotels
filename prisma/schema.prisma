@@ -15,15 +15,18 @@ model User {
   phone        String?
   passwordHash String?
   image        String?
-  role         String    @default("user")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  role               String    @default("user")
+  bonusBalance       Int       @default(0)
+  emailNotifications Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  accounts  Account[]
-  sessions  Session[]
-  bookings  Booking[]
-  favorites Favorite[]
-  reviews   Review[]
+  accounts          Account[]
+  sessions          Session[]
+  bookings          Booking[]
+  favorites         Favorite[]
+  reviews           Review[]
+  bonusTransactions BonusTransaction[]
 }
 
 model Account {
@@ -80,17 +83,37 @@ model Booking {
   totalPrice    Int
   discount      Int      @default(0)
   finalPrice    Int
+  bonusSpent    Int      @default(0)
+  bonusEarned   Int      @default(0)
   paymentMethod String
-  status        String   @default("confirmed")
-  guestFirstName String
+  status            String   @default("confirmed")
+  notificationsSent String   @default("")
+  guestFirstName    String
   guestLastName  String
   guestEmail     String
   guestPhone     String
   createdAt     DateTime @default(now())
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  bonusTransactions BonusTransaction[]
 
   @@index([userId])
+}
+
+model BonusTransaction {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  type        String   // earn, spend, admin_adjust
+  bookingId   String?
+  description String
+  createdAt   DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([bookingId])
 }
 
 model Favorite {

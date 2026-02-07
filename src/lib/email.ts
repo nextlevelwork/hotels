@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 import type { Booking } from '@prisma/client';
 import { formatPriceShort, pluralize } from './utils';
 
@@ -29,6 +30,159 @@ const paymentLabels: Record<string, string> = {
   sbp: 'СБП',
   cash: 'При заселении',
 };
+
+function getBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXTAUTH_URL || 'https://gostinets.ru';
+}
+
+// --- Unsubscribe helpers ---
+
+export function generateUnsubscribeToken(userId: string): string {
+  const secret = process.env.EMAIL_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-secret';
+  return crypto.createHmac('sha256', secret).update(userId).digest('hex');
+}
+
+export function verifyUnsubscribeToken(userId: string, token: string): boolean {
+  const expected = generateUnsubscribeToken(userId);
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token));
+}
+
+export function generateUnsubscribeUrl(userId: string): string {
+  const token = generateUnsubscribeToken(userId);
+  return `${getBaseUrl()}/api/unsubscribe?userId=${userId}&token=${token}`;
+}
+
+// --- Email layout helper ---
+
+function emailLayout(content: string, unsubscribeUrl?: string): string {
+  const footerUnsub = unsubscribeUrl
+    ? `<a href="${unsubscribeUrl}" style="color:#888;text-decoration:underline;">Отписаться от уведомлений</a>`
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="ru">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;max-width:600px;">
+
+        <!-- Header -->
+        <tr><td style="background:linear-gradient(135deg,#2E86AB,#236B88);padding:24px 32px;text-align:center;">
+          <div style="color:#ffffff;font-size:24px;font-weight:bold;">Гостинец</div>
+        </td></tr>
+
+        <!-- Content -->
+        <tr><td style="padding:32px;">
+          ${content}
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #eee;">
+          <div style="font-size:12px;color:#888;line-height:1.6;">
+            Гостинец — сервис бронирования<br>
+            ${footerUnsub}
+          </div>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+// --- Notification emails ---
+
+export async function sendCheckinReminder(booking: Booking & { user?: { id: string } | null }) {
+  if (!process.env.SMTP_HOST || !booking.guestEmail) return;
+
+  const transporter = getTransporter();
+  const unsubscribeUrl = booking.user?.id ? generateUnsubscribeUrl(booking.user.id) : undefined;
+
+  const content = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:48px;margin-bottom:8px;">🏨</div>
+      <h1 style="font-size:22px;color:#1a1a1a;margin:0;">Завтра заезд!</h1>
+    </div>
+    <p style="font-size:15px;color:#333;line-height:1.6;">
+      Здравствуйте, ${booking.guestFirstName}!
+    </p>
+    <p style="font-size:15px;color:#333;line-height:1.6;">
+      Напоминаем, что завтра, <strong>${booking.checkIn}</strong>, вас ждут в отеле
+      <strong>${booking.hotelName}</strong>.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-radius:8px;padding:16px;margin:16px 0;">
+      <tr><td>
+        <div style="font-size:13px;color:#888;margin-bottom:4px;">Номер</div>
+        <div style="font-size:15px;color:#1a1a1a;font-weight:bold;">${booking.roomName}</div>
+        <div style="font-size:13px;color:#888;margin-top:12px;margin-bottom:4px;">Бронирование</div>
+        <div style="font-size:15px;color:#1a1a1a;font-weight:bold;">${booking.bookingId}</div>
+        <div style="font-size:13px;color:#888;margin-top:12px;margin-bottom:4px;">Даты</div>
+        <div style="font-size:15px;color:#1a1a1a;">${booking.checkIn} — ${booking.checkOut}</div>
+      </td></tr>
+    </table>
+    <p style="font-size:14px;color:#555;line-height:1.6;">
+      Предъявите ваучер бронирования при заселении. Хорошей поездки!
+    </p>`;
+
+  const html = emailLayout(content, unsubscribeUrl);
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || 'Гостинец <noreply@gostinets.ru>',
+    to: booking.guestEmail,
+    subject: `Завтра заезд в ${booking.hotelName} — Гостинец`,
+    html,
+  });
+}
+
+export async function sendReviewRequest(
+  booking: Booking & { user?: { id: string; bonusBalance?: number } | null },
+  bonusEarned: number,
+) {
+  if (!process.env.SMTP_HOST || !booking.guestEmail) return;
+
+  const transporter = getTransporter();
+  const unsubscribeUrl = booking.user?.id ? generateUnsubscribeUrl(booking.user.id) : undefined;
+  const baseUrl = getBaseUrl();
+  const reviewUrl = `${baseUrl}/hotels/${booking.hotelSlug}#reviews`;
+
+  const bonusSection = bonusEarned > 0
+    ? `<div style="background:#f0fdf4;border-radius:8px;padding:16px;margin:16px 0;text-align:center;">
+        <div style="font-size:14px;color:#16a34a;font-weight:bold;">+${bonusEarned} бонусов начислено за эту поездку!</div>
+      </div>`
+    : '';
+
+  const content = `
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:48px;margin-bottom:8px;">⭐</div>
+      <h1 style="font-size:22px;color:#1a1a1a;margin:0;">Как прошла поездка?</h1>
+    </div>
+    <p style="font-size:15px;color:#333;line-height:1.6;">
+      Здравствуйте, ${booking.guestFirstName}!
+    </p>
+    <p style="font-size:15px;color:#333;line-height:1.6;">
+      Надеемся, вам понравилось пребывание в отеле <strong>${booking.hotelName}</strong>.
+      Будем благодарны, если вы оставите отзыв — это поможет другим путешественникам!
+    </p>
+    ${bonusSection}
+    <div style="text-align:center;margin:24px 0;">
+      <a href="${reviewUrl}" style="display:inline-block;background:#2E86AB;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:15px;font-weight:bold;">
+        Оставить отзыв
+      </a>
+    </div>`;
+
+  const html = emailLayout(content, unsubscribeUrl);
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || 'Гостинец <noreply@gostinets.ru>',
+    to: booking.guestEmail,
+    subject: `Оставьте отзыв о ${booking.hotelName} — Гостинец`,
+    html,
+  });
+}
+
+// --- Original booking confirmation (kept as-is with layout) ---
 
 export async function sendBookingConfirmation(booking: Booking) {
   if (!process.env.SMTP_HOST || !booking.guestEmail) return;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { User, Phone, Mail, Lock, Save } from 'lucide-react';
+import { User, Phone, Mail, Lock, Save, Bell } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { useToastStore } from '@/store/toast-store';
@@ -11,6 +11,7 @@ interface ProfileData {
   name: string;
   email: string;
   phone: string | null;
+  emailNotifications: boolean;
   createdAt: string;
 }
 
@@ -23,6 +24,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [saving, setSaving] = useState(false);
+  const [emailNotifications, setEmailNotifications] = useState(true);
 
   // Password change
   const [currentPassword, setCurrentPassword] = useState('');
@@ -38,6 +40,7 @@ export default function ProfilePage() {
         setProfile(data);
         setName(data.name || '');
         setPhone(data.phone || '');
+        setEmailNotifications(data.emailNotifications ?? true);
       })
       .catch(() => {
         addToast('error', 'Ошибка загрузки профиля');
@@ -63,6 +66,27 @@ export default function ProfilePage() {
       addToast('error', 'Ошибка сохранения');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleNotifications = async () => {
+    const newValue = !emailNotifications;
+    setEmailNotifications(newValue);
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailNotifications: newValue }),
+      });
+      if (res.ok) {
+        addToast('success', newValue ? 'Уведомления включены' : 'Уведомления отключены');
+      } else {
+        setEmailNotifications(!newValue);
+        addToast('error', 'Ошибка сохранения');
+      }
+    } catch {
+      setEmailNotifications(!newValue);
+      addToast('error', 'Ошибка сохранения');
     }
   };
 
@@ -152,6 +176,37 @@ export default function ProfilePage() {
             <Save className="h-4 w-4 mr-2" />
             Сохранить
           </Button>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="bg-white rounded-2xl border border-border p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Bell className="h-5 w-5" />
+          Уведомления
+        </h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">Email-уведомления</p>
+            <p className="text-xs text-muted mt-0.5">
+              Напоминания о заезде и просьбы оставить отзыв
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={emailNotifications}
+            onClick={handleToggleNotifications}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              emailNotifications ? 'bg-[#2E86AB]' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                emailNotifications ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
         </div>
       </div>
 
