@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { sendBookingConfirmation } from '@/lib/email';
 
 export async function GET() {
   const session = await auth();
@@ -74,6 +75,8 @@ export async function POST(request: Request) {
       guestPhone: guestPhone || '',
     },
   });
+
+  sendBookingConfirmation(booking).catch(console.error);
 
   return NextResponse.json(booking, { status: 201 });
 }

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { Search, Heart, User, Home, Bookmark, BookOpen, LogOut } from 'lucide-react';
+import { Search, Heart, User, Home, Bookmark, BookOpen, Shield, LogOut } from 'lucide-react';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -120,6 +120,16 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
               <BookOpen className="h-5 w-5 text-muted" />
               <span className="font-medium">Мои бронирования</span>
             </Link>
+            {session.user.role === 'admin' && (
+              <Link
+                href="/admin"
+                onClick={onClose}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-foreground hover:bg-gray-50 transition-colors"
+              >
+                <Shield className="h-5 w-5 text-muted" />
+                <span className="font-medium">Админ-панель</span>
+              </Link>
+            )}
             <button
               onClick={() => {
                 onClose();

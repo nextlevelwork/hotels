@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { User, BookOpen, Heart, LogOut } from 'lucide-react';
+import { User, BookOpen, Heart, Shield, LogOut } from 'lucide-react';
 
 export default function UserMenu() {
   const { data: session } = useSession();
@@ -71,6 +71,16 @@ export default function UserMenu() {
               <Heart className="h-4 w-4 text-muted" />
               Избранное
             </Link>
+            {session.user.role === 'admin' && (
+              <Link
+                href="/admin"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-gray-50 transition-colors"
+              >
+                <Shield className="h-4 w-4 text-muted" />
+                Админ-панель
+              </Link>
+            )}
           </nav>
 
           <div className="border-t border-border pt-1">
