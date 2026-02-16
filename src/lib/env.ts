@@ -21,8 +21,9 @@ const envSchema = z.object({
   OSTROVOK_BASE_URL: optionalUrl,
 
   // OAuth (optional — email auth works without)
-  AUTH_GOOGLE_CLIENT_ID: z.string().optional(),
-  AUTH_GOOGLE_CLIENT_SECRET: z.string().optional(),
+  // NextAuth v5 Google provider reads AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET automatically
+  AUTH_GOOGLE_ID: z.string().optional(),
+  AUTH_GOOGLE_SECRET: z.string().optional(),
   AUTH_YANDEX_CLIENT_ID: z.string().optional(),
   AUTH_YANDEX_CLIENT_SECRET: z.string().optional(),
 
