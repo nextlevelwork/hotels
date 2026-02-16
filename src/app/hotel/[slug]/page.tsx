@@ -20,9 +20,7 @@ import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import type { Review } from '@/data/types';
 
-export async function generateStaticParams() {
-  return allHotels.map((hotel) => ({ slug: hotel.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 interface HotelPageProps {
   params: Promise<{ slug: string }>;
