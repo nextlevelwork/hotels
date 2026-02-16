@@ -19,7 +19,7 @@ const Yandex: OAuthConfig<YandexProfile> = {
   type: 'oauth',
   authorization: {
     url: 'https://oauth.yandex.ru/authorize',
-    params: { scope: 'login:email login:info login:avatar' },
+    params: { scope: 'login:email login:info' },
   },
   token: 'https://oauth.yandex.ru/token',
   userinfo: 'https://login.yandex.ru/info?format=json',
