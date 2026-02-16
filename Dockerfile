@@ -29,17 +29,18 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+# Install Prisma CLI into isolated location (avoids conflicts with standalone node_modules)
+RUN mkdir -p /prisma-cli && cd /prisma-cli && npm init -y && npm install prisma
+
 # Copy standalone build
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma schema, client, and install CLI for migrations
+# Copy Prisma schema and generated client
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/package.json ./package.json
-RUN npm install prisma --ignore-scripts
 
 # Copy entrypoint script
 COPY --chown=nextjs:nodejs entrypoint.sh ./entrypoint.sh
