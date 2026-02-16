@@ -59,10 +59,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/auth/login',
   },
   providers: [
-    Google({
-      allowDangerousEmailAccountLinking: true,
-    }),
-    Yandex,
+    ...(process.env.AUTH_GOOGLE_CLIENT_ID
+      ? [Google({ allowDangerousEmailAccountLinking: true })]
+      : []),
+    ...(process.env.AUTH_YANDEX_CLIENT_ID ? [Yandex] : []),
     Credentials({
       name: 'credentials',
       credentials: {
