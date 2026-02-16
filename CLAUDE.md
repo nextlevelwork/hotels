@@ -52,6 +52,14 @@ Repo: `nextlevelwork/hotels` (note: different from directory name)
 - **Component tests**: `nw add react-testing` (vitest config, setup, component patterns)
 - **E2E tests**: `nw add e2e` (Playwright config, auth setup, booking CRUD spec)
 
+## Deployment
+- **Domain**: gostinetz.ru (158.160.223.240)
+- **Deploy**: `ssh servix` → `cd ~/gostinets && git pull && docker compose up -d --build`
+- **Ports**: app 3002, PG 5435 (localhost only)
+- **Logs**: `ssh servix "cd ~/gostinets && docker compose logs app --tail=50"`
+- **SSL**: `sudo certbot --nginx -d gostinetz.ru -d www.gostinetz.ru` (after DNS setup)
+
 ## DB Access
 - Local: PostgreSQL `gostinets` (user `andrey`), env in `.env.local`
+- Production: `ssh servix "cd ~/gostinets && docker compose exec -T db psql -U gostinets -d gostinets"`
 - Test user: `test@example.com` / `test123` (role: admin)
