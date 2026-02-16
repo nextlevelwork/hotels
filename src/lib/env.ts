@@ -1,21 +1,24 @@
 import { z } from 'zod';
 
+// Handles empty strings from Docker env defaults (e.g. ${VAR:-})
+const optionalUrl = z.string().url().optional().or(z.literal(''));
+
 const envSchema = z.object({
   // Database (required)
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
 
   // NextAuth (required)
   NEXTAUTH_SECRET: z.string().min(1, 'NEXTAUTH_SECRET is required'),
-  NEXTAUTH_URL: z.string().url().optional(),
+  NEXTAUTH_URL: optionalUrl,
 
   // Public
   NEXT_PUBLIC_API_MODE: z.enum(['mock', 'ostrovok']).default('mock'),
-  NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
+  NEXT_PUBLIC_BASE_URL: optionalUrl,
 
   // Ostrovok (optional — mock mode works without)
   OSTROVOK_KEY_ID: z.string().optional(),
   OSTROVOK_API_KEY: z.string().optional(),
-  OSTROVOK_BASE_URL: z.string().url().optional(),
+  OSTROVOK_BASE_URL: optionalUrl,
 
   // OAuth (optional — email auth works without)
   AUTH_GOOGLE_CLIENT_ID: z.string().optional(),
@@ -34,7 +37,7 @@ const envSchema = z.object({
   // YooKassa (optional — cash payment works without)
   YOOKASSA_SHOP_ID: z.string().optional(),
   YOOKASSA_SECRET_KEY: z.string().optional(),
-  YOOKASSA_RETURN_URL: z.string().url().optional(),
+  YOOKASSA_RETURN_URL: optionalUrl,
 
   // Cron
   CRON_SECRET: z.string().optional(),
