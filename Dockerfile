@@ -30,7 +30,7 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 # Install Prisma CLI into isolated location (avoids conflicts with standalone node_modules)
-RUN mkdir -p /prisma-cli && cd /prisma-cli && npm init -y && npm install prisma
+RUN mkdir -p /prisma-cli && cd /prisma-cli && npm init -y && npm install prisma@6.19.2
 
 # Copy standalone build
 COPY --from=builder /app/public ./public
